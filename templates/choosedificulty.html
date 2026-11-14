@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Simulação</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+
+        #situacao {
+            font-size: 24px;
+            margin: 30px;
+        }
+
+        button {
+            padding: 15px 35px;
+            margin: 10px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        #sim {
+            background-color: green;
+            color: white;
+        }
+
+        #nao {
+            background-color: red;
+            color: white;
+        }
+
+        #status {
+            margin-top: 30px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Simulação</h1>
+
+    <div id="situacao">
+        Carregando situação...
+    </div>
+
+    <button id="sim" onclick="responderSim()">SIM</button>
+    <button id="nao" onclick="responderNao()">NÃO</button>
+
+    <div id="status">
+        Energia: <span id="energia">100</span><br>
+        Integridade dos equipamentos: <span id="integridade">100</span>
+    </div>
+
+    <script>
+
+        // Variáveis
+        let energia = 100;
+        let integridade = 100;
+
+        // Situações
+        let choices = {
+            1: "Uma tempestade solar está chegando. Você guarda seus equipamentos, ou não?",
+            2: "Situação 2",
+            3: "Situação 3",
+            4: "Situação 4"
+        };
+
+        // Consequência de SIM
+        let conseqy = {
+            1: "A energia diminuiu.",
+            2: "Situação 2",
+            3: "Situação 3",
+            4: "Situação 4"
+        };
+
+        // Consequência de NÃO
+        let conseqn = {
+            1: "A integridade dos equipamentos diminuiu.",
+            2: "Situação 2",
+            3: "Situação 3",
+            4: "Situação 4"
+        };
+
+
+        // Escolhe uma situação aleatória
+        function novaSituacao() {
+
+            // Equivalente ao random.randint(1, 10)
+            let probability = Math.floor(Math.random() * 10) + 1;
+
+            // Só aparece uma situação se sair 1
+            if (probability == 1) {
+
+                // Equivalente ao random.randint(1, 4)
+                let choiceIndex = Math.floor(Math.random() * 4) + 1;
+
+                document.getElementById("situacao").innerText = choices[choiceIndex];
+
+                // Guarda qual situação foi escolhida
+                window.choiceIndex = choiceIndex;
+            }
+
+        }
+
+
+        // Quando clicar em SIM
+        function responderSim() {
+
+            let choiceIndex = window.choiceIndex;
+
+            if (choiceIndex == 1) {
+
+                // SIM = guardar equipamentos
+                energia = energia - 10;
+
+                document.getElementById("situacao").innerText =
+                    conseqy[choiceIndex];
+
+            }
+
+            atualizarStatus();
+
+            novaSituacao();
+        }
+
+
+        // Quando clicar em NÃO
+        function responderNao() {
+
+            let choiceIndex = window.choiceIndex;
+
+            if (choiceIndex == 1) {
+
+                // NÃO = não guardar equipamentos
+                integridade = integridade - 10;
+
+                document.getElementById("situacao").innerText =
+                    conseqn[choiceIndex];
+
+            }
+
+            atualizarStatus();
+
+            novaSituacao();
+        }
+
+
+        // Atualiza os valores na tela
+        function atualizarStatus() {
+
+            document.getElementById("energia").innerText = energia;
+
+            document.getElementById("integridade").innerText =
+                integridade;
+
+        }
+
+
+        // Começa o programa
+        novaSituacao();
+
+    </script>
+
+</body>
+
+</html>
