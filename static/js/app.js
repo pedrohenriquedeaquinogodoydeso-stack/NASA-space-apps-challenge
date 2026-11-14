@@ -1,0 +1,869 @@
+const h = React.createElement;
+const BOOTSTRAP = JSON.parse(document.getElementById("mission-bootstrap").textContent);
+
+const NASA_CONSTANTS = BOOTSTRAP.nasaConstants;
+const MARS_SITES = BOOTSTRAP.marsSites;
+const MODULES = BOOTSTRAP.modules;
+const ROCKET_ARCHITECTURES = BOOTSTRAP.rocketArchitectures;
+
+const colors = {
+    background: "#070b16",
+    panel: "rgba(17, 26, 45, 0.78)",
+    text: "#f4f7ff",
+    muted: "#a7b3c9",
+    orange: "#ff764a",
+    cyan: "#70e1e8",
+    green: "#56e39f",
+    red: "#ff6b6b",
+    border: "rgba(173, 194, 225, 0.17)"
+};
+
+const page = {
+    minHeight: "100vh",
+    overflowX: "hidden",
+    color: colors.text,
+    fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    background:
+        "radial-gradient(ellipse at 82% 35%, rgba(32, 71, 116, 0.28), transparent 38%), " +
+        "radial-gradient(ellipse at 12% 4%, rgba(255, 118, 74, 0.11), transparent 32%), " +
+        colors.background
+};
+
+const container = {
+    width: "min(1120px, calc(100% - 48px))",
+    margin: "0 auto"
+};
+
+function App() {
+    const [screen, setScreen] = React.useState("landing");
+    const [crewSize, setCrewSize] = React.useState(BOOTSTRAP.initialLoadout.crew_size);
+    const [siteId, setSiteId] = React.useState(BOOTSTRAP.initialLoadout.landing_site);
+    const [rocketId, setRocketId] = React.useState(BOOTSTRAP.initialLoadout.rocket_architecture);
+    const [activeModules, setActiveModules] = React.useState(BOOTSTRAP.defaultModules);
+    const [loadoutPreview, setLoadoutPreview] = React.useState(BOOTSTRAP.initialLoadout);
+
+    const selectedSite = MARS_SITES[siteId];
+    const selectedRocket = ROCKET_ARCHITECTURES[rocketId];
+
+    const baseSuppliesMassKg =
+        NASA_CONSTANTS.INITIAL_OXIGEN_KG +
+        NASA_CONSTANTS.INITIAL_WATER_L +
+        NASA_CONSTANTS.INITIAL_FOOD_KG;
+
+    // Dependência corrigida para evitar loops e garantir atualização correta da massa
+    React.useEffect(function () {
+        let cancelled = false;
+        fetch("/api/preview_loadout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                crew_size: crewSize,
+                site: siteId,
+                rocket: rocketId,
+                modules: activeModules
+            })
+        })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (!cancelled && !data.error) {
+                    setLoadoutPreview(data);
+                }
+            })
+            .catch(function () {});
+
+        return function () { cancelled = true; };
+    }, [crewSize, siteId, rocketId, activeModules.join(",")]);
+
+    function toggleModule(modId) {
+        setActiveModules(function (prev) {
+            if (prev.includes(modId)) {
+                return prev.filter(function (id) { return id !== modId; });
+            }
+            return prev.concat([modId]);
+        });
+    }
+
+    const highlights = [
+        { number: "01", label: "CHOOSE A LANDING SITE", detail: "Jezero, Arcadia, and more" },
+        { number: "02", label: "BUILD YOUR MISSION", detail: "Propulsion, modules, and crew" },
+        { number: "03", label: "SURVIVE ON MARS", detail: "Every choice shapes the outcome" }
+    ];
+
+    function plannerContent() {
+        const gameUrl = "/game?crew_size=" + crewSize +
+            "&site=" + encodeURIComponent(siteId) +
+            "&rocket=" + encodeURIComponent(rocketId) +
+            "&modules=" + encodeURIComponent(activeModules.join(","));
+
+        return h("section", {
+            style: Object.assign({}, container, { paddingTop: "44px", paddingBottom: "60px" })
+        },
+            h("button", {
+                type: "button",
+                onClick: function () { setScreen("landing"); },
+                style: {
+                    padding: "8px 0",
+                    border: "none",
+                    background: "transparent",
+                    color: colors.cyan,
+                    cursor: "pointer",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    letterSpacing: "1.2px"
+                }
+            }, "← BACK TO OVERVIEW"),
+            h("div", { style: { margin: "22px 0 28px" } },
+                h("div", {
+                    style: {
+                        color: colors.orange,
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        letterSpacing: "2px"
+                    }
+                }, "MISSION PLANNER // STEP 01"),
+                h("h1", {
+                    style: {
+                        margin: "10px 0 8px",
+                        fontSize: "clamp(34px, 5vw, 52px)",
+                        letterSpacing: "-2px"
+                    }
+                }, "Build your mission plan"),
+                h("p", {
+                    style: { margin: 0, color: colors.muted, fontSize: "14px", lineHeight: 1.7 }
+                }, "Configure your landing site, rocket propulsion architecture, surface payload modules, and crew before launch.")
+            ),
+
+            // Top row: Map & Sidebar Telemetry Preview
+            h("div", {
+                style: {
+                    display: "flex",
+                    alignItems: "stretch",
+                    flexWrap: "wrap",
+                    gap: "20px"
+                }
+            },
+                h("section", {
+                    style: {
+                        flex: "1 1 540px",
+                        minWidth: "0",
+                        padding: "20px",
+                        border: "1px solid " + colors.border,
+                        borderRadius: "8px",
+                        background: colors.panel,
+                        boxSizing: "border-box"
+                    },
+                    "aria-label": "Mars thermal map"
+                },
+                    h("div", {
+                        style: {
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: "10px",
+                            marginBottom: "16px"
+                        }
+                    },
+                        h("div", { style: { fontSize: "11px", fontWeight: 800, letterSpacing: "1.3px" } }, "MARS THERMAL MAP"),
+                        h("span", { style: { color: colors.muted, fontSize: "10px" } }, "SCHEMATIC · PROJECT ESTIMATES")
+                    ),
+                    h("div", {
+                        style: {
+                            position: "relative",
+                            minHeight: "350px",
+                            overflow: "hidden",
+                            border: "1px solid rgba(255,255,255,.1)",
+                            borderRadius: "6px",
+                            background:
+                                "radial-gradient(ellipse at 73% 72%, rgba(255, 104, 57, .86), transparent 18%), " +
+                                "radial-gradient(ellipse at 42% 74%, rgba(255, 139, 66, .72), transparent 20%), " +
+                                "radial-gradient(ellipse at 68% 48%, rgba(255, 125, 68, .64), transparent 21%), " +
+                                "radial-gradient(ellipse at 27% 30%, rgba(81, 163, 232, .85), transparent 22%), " +
+                                "radial-gradient(ellipse at 45% 45%, rgba(187, 80, 57, .9), transparent 56%), " +
+                                "linear-gradient(140deg, #552c38, #ad533a 48%, #482b3d)",
+                            backgroundSize: "cover",
+                            boxShadow: "inset 0 0 70px rgba(6, 9, 20, .55)"
+                        }
+                    },
+                        h("div", {
+                            style: {
+                                position: "absolute",
+                                inset: 0,
+                                opacity: .14,
+                                backgroundImage: "linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)",
+                                backgroundSize: "40px 40px",
+                                pointerEvents: "none"
+                            }
+                        }),
+                        Object.entries(MARS_SITES).map(function (entry) {
+                            const key = entry[0];
+                            const site = entry[1];
+                            const isSelected = key === siteId;
+                            return h("button", {
+                                key: key,
+                                type: "button",
+                                onClick: function () { setSiteId(key); },
+                                "aria-pressed": isSelected,
+                                "aria-label": site.short_name + ", average temperature " + site.avg_temp_c + " degrees Celsius",
+                                title: site.name + " · " + site.avg_temp_c + "°C",
+                                style: {
+                                    position: "absolute",
+                                    left: site.map_left,
+                                    top: site.map_top,
+                                    transform: "translate(-50%, -50%)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "7px",
+                                    padding: "7px 9px",
+                                    border: "1px solid " + (isSelected ? colors.cyan : "rgba(255,255,255,.42)"),
+                                    borderRadius: "20px",
+                                    background: isSelected ? "#0b1724" : "rgba(8, 13, 24, .78)",
+                                    color: colors.text,
+                                    cursor: "pointer",
+                                    whiteSpace: "nowrap",
+                                    boxShadow: isSelected ? "0 0 0 3px rgba(112,225,232,.2)" : "none",
+                                    fontSize: "10px",
+                                    fontWeight: 700
+                                }
+                            },
+                                h("span", {
+                                    style: {
+                                        width: "8px",
+                                        height: "8px",
+                                        borderRadius: "50%",
+                                        background: site.avg_temp_c <= -60 ? "#70d6ff" : site.avg_temp_c <= -50 ? "#ffb05e" : "#ff654a",
+                                        boxShadow: "0 0 10px currentColor"
+                                    }
+                                }),
+                                site.short_name
+                            );
+                        }),
+                        h("div", {
+                            style: {
+                                position: "absolute",
+                                left: "12px",
+                                bottom: "12px",
+                                color: "rgba(255,255,255,.72)",
+                                fontSize: "9px",
+                                letterSpacing: "1.1px",
+                                pointerEvents: "none"
+                            }
+                        }, "N  ↑")
+                    ),
+                    h("div", {
+                        style: {
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            marginTop: "15px",
+                            color: colors.muted,
+                            fontSize: "10px"
+                        }
+                    },
+                        h("span", null, "COLDER"),
+                        h("span", {
+                            style: {
+                                flex: 1,
+                                height: "7px",
+                                borderRadius: "8px",
+                                background: "linear-gradient(90deg, #54b9ed, #e1b45d, #ff654a)"
+                            }
+                        }),
+                        h("span", null, "WARMER")
+                    ),
+                    h("div", {
+                        style: {
+                            marginTop: "18px",
+                            padding: "15px",
+                            border: "1px solid " + colors.border,
+                            borderRadius: "5px",
+                            background: "rgba(7, 11, 22, .58)",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: "12px"
+                        }
+                    },
+                        h("div", null,
+                            h("div", { style: { color: colors.cyan, fontSize: "9px", letterSpacing: "1.3px", fontWeight: 800 } }, "SELECTED LANDING SITE"),
+                            h("div", { style: { marginTop: "5px", fontSize: "15px", fontWeight: 700 } }, selectedSite.name),
+                            h("div", { style: { marginTop: "4px", color: colors.muted, fontSize: "11px" } },
+                                "Latitude " + selectedSite.latitude_label +
+                                " · Solar Efficiency " + Math.round(selectedSite.solar_efficiency * 100) + "%" +
+                                " · Science " + selectedSite.science_multiplier + "x"
+                            )
+                        ),
+                        h("div", { style: { textAlign: "right" } },
+                            h("div", { style: { color: colors.muted, fontSize: "9px", letterSpacing: "1px" } }, "AVG. SURFACE TEMP."),
+                            h("div", { style: { marginTop: "3px", color: colors.orange, fontSize: "24px", fontWeight: 800 } }, selectedSite.avg_temp_c + "°C")
+                        )
+                    )
+                ),
+
+                h("aside", {
+                    style: {
+                        flex: "1 1 300px",
+                        minWidth: "0",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "16px"
+                    }
+                },
+                    h("section", {
+                        style: {
+                            padding: "20px",
+                            border: "1px solid " + colors.border,
+                            borderRadius: "8px",
+                            background: colors.panel
+                        }
+                    },
+                        h("div", { style: { fontSize: "11px", fontWeight: 800, letterSpacing: "1.3px" } }, "CREW SIZE"),
+                        h("div", {
+                            style: {
+                                display: "flex",
+                                alignItems: "baseline",
+                                justifyContent: "space-between",
+                                marginTop: "12px"
+                            }
+                        },
+                            h("label", { htmlFor: "crew-size", style: { color: colors.muted, fontSize: "12px" } }, "Crew members"),
+                            h("output", {
+                                htmlFor: "crew-size",
+                                style: { color: colors.cyan, fontSize: "26px", fontWeight: 800 }
+                            }, String(crewSize))
+                        ),
+                        h("input", {
+                            id: "crew-size",
+                            type: "range",
+                            min: 1,
+                            max: 12,
+                            step: 1,
+                            value: crewSize,
+                            onChange: function (event) { setCrewSize(Number(event.target.value)); },
+                            "aria-label": "Number of crew members",
+                            style: { width: "100%", margin: "12px 0", accentColor: colors.orange, cursor: "pointer" }
+                        }),
+                        h("div", {
+                            style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" }
+                        }, h("span", null, "1 PERSON"), h("span", null, "12 PEOPLE"))
+                    ),
+
+                    h("div", {
+                        "aria-live": "polite",
+                        style: {
+                            padding: "16px",
+                            borderLeft: "2px solid " + colors.orange,
+                            background: "rgba(255, 118, 74, .07)",
+                            color: colors.muted,
+                            fontSize: "11px",
+                            lineHeight: 1.75
+                        }
+                    },
+                        h("strong", { style: { color: colors.text, letterSpacing: "0.8px" } }, "MISSION TELEMETRY PREVIEW"),
+                        h("br"),
+                        crewSize + (crewSize === 1 ? " crew member" : " crew members"),
+                        h("br"),
+                        selectedSite.short_name + " (" + selectedSite.avg_temp_c + "°C)",
+                        h("br"),
+                        "Rocket: " + selectedRocket.name,
+                        h("br"),
+                        "Payload Mass: ",
+                        h("strong", { style: { color: colors.cyan } }, Number(loadoutPreview.total_mass_kg).toLocaleString() + " kg"),
+                        " / " + Number(loadoutPreview.max_payload_mass_kg).toLocaleString() + " kg limit",
+                        h("br"),
+                        "Module Power Net: ",
+                        h("strong", { style: { color: loadoutPreview.net_module_power_kwe >= 0 ? colors.green : colors.orange } },
+                            (loadoutPreview.net_module_power_kwe >= 0 ? "+" : "") + loadoutPreview.net_module_power_kwe.toFixed(1) + " kWe"
+                        ),
+                        " (Base habitat: " + loadoutPreview.base_habitat_power_kwe + " kWe)"
+                    )
+                )
+            ),
+
+            // Second Row: Rocket Architecture Selection
+            h("section", {
+                style: {
+                    marginTop: "24px",
+                    padding: "22px",
+                    border: "1px solid " + colors.border,
+                    borderRadius: "8px",
+                    background: colors.panel
+                }
+            },
+                h("div", {
+                    style: {
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: "8px",
+                        marginBottom: "16px"
+                    }
+                },
+                    h("div", null,
+                        h("div", { style: { color: colors.cyan, fontSize: "10px", fontWeight: 800, letterSpacing: "1.5px" } }, "LAUNCH VEHICLE // MARS DRA 5.0"),
+                        h("h2", { style: { margin: "4px 0 0", fontSize: "18px", fontWeight: 800 } }, "Rocket Architecture & Propellant Type")
+                    ),
+                    h("span", { style: { color: colors.muted, fontSize: "11px" } },
+                        "Surface Payload Limit: " + Number(selectedRocket.surface_payload_limit_kg).toLocaleString() + " kg"
+                    )
+                ),
+                h("div", {
+                    style: {
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                        gap: "16px"
+                    }
+                },
+                    Object.entries(ROCKET_ARCHITECTURES).map(function (entry) {
+                        const key = entry[0];
+                        const rocket = entry[1];
+                        const isSelected = key === rocketId;
+                        const imleoTons = (rocket.imleo_mass_kg / 1000).toFixed(1);
+
+                        return h("button", {
+                            key: key,
+                            type: "button",
+                            onClick: function () { setRocketId(key); },
+                            "aria-pressed": isSelected,
+                            style: {
+                                padding: "18px",
+                                textAlign: "left",
+                                border: "1px solid " + (isSelected ? colors.cyan : colors.border),
+                                borderRadius: "6px",
+                                background: isSelected ? "rgba(112, 225, 232, 0.08)" : "rgba(7, 11, 22, 0.5)",
+                                color: colors.text,
+                                cursor: "pointer",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "10px",
+                                boxShadow: isSelected ? "0 0 0 2px rgba(112,225,232,0.15)" : "none"
+                            }
+                        },
+                            h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" } },
+                                h("span", { style: { fontSize: "14px", fontWeight: 800, color: isSelected ? colors.cyan : colors.text } }, rocket.name),
+                                h("span", { style: { fontSize: "15px", color: isSelected ? colors.cyan : colors.muted } }, isSelected ? "●" : "○")
+                            ),
+                            h("div", { style: { fontSize: "11px", color: colors.orange, fontWeight: 700 } }, "Propellant: " + rocket.fuel_type),
+                            h("div", {
+                                style: {
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    gap: "8px",
+                                    fontSize: "10px",
+                                    fontWeight: 700
+                                }
+                            },
+                                h("span", { style: { padding: "3px 8px", borderRadius: "4px", background: "rgba(255,255,255,0.06)", color: colors.text } }, rocket.isp_seconds + "s Isp"),
+                                h("span", { style: { padding: "3px 8px", borderRadius: "4px", background: "rgba(255,255,255,0.06)", color: colors.text } }, imleoTons + " t IMLEO"),
+                                h("span", { style: { padding: "3px 8px", borderRadius: "4px", background: "rgba(255,255,255,0.06)", color: colors.muted } }, rocket.budget_cost_multiplier + "x Budget")
+                            ),
+                            h("div", { style: { fontSize: "11px", lineHeight: 1.55, color: colors.muted } },
+                                h("strong", { style: { color: colors.green } }, "+ Benefits: "),
+                                rocket.pros
+                            ),
+                            h("div", { style: { fontSize: "11px", lineHeight: 1.55, color: colors.muted } },
+                                h("strong", { style: { color: colors.red } }, "− Drawbacks: "),
+                                rocket.cons
+                            )
+                        );
+                    })
+                )
+            ),
+
+            // Third Row: Surface Modules Selection (com imagens adicionadas)
+            h("section", {
+                style: {
+                    marginTop: "24px",
+                    padding: "22px",
+                    border: "1px solid " + colors.border,
+                    borderRadius: "8px",
+                    background: colors.panel
+                }
+            },
+                h("div", {
+                    style: {
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: "8px",
+                        marginBottom: "16px"
+                    }
+                },
+                    h("div", null,
+                        h("div", { style: { color: colors.orange, fontSize: "10px", fontWeight: 800, letterSpacing: "1.5px" } }, "CARGO MANIFEST // OPTIONAL MODULES"),
+                        h("h2", { style: { margin: "4px 0 0", fontSize: "18px", fontWeight: 800 } }, "Colony Modules & Trade-offs")
+                    ),
+                    h("span", { style: { color: colors.muted, fontSize: "11px" } },
+                        "Selected Modules Mass: " + Number(loadoutPreview.modules_mass_kg).toLocaleString() +
+                        " kg (+ " + Number(baseSuppliesMassKg).toLocaleString() + " kg base supplies)"
+                    )
+                ),
+                h("div", {
+                    style: {
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                        gap: "16px"
+                    }
+                },
+                    Object.entries(MODULES).map(function (entry) {
+                        const key = entry[0];
+                        const mod = entry[1];
+                        const isActive = activeModules.includes(key);
+                        const powerLabel = (mod.is_generator ? "+" : "-") + mod.power_kwe.toFixed(1) + " kWe " + (mod.is_generator ? "Output" : "Demand");
+
+                        return h("button", {
+                            key: key,
+                            type: "button",
+                            onClick: function () { toggleModule(key); },
+                            "aria-pressed": isActive,
+                            style: {
+                                padding: "16px",
+                                textAlign: "left",
+                                border: "1px solid " + (isActive ? colors.cyan : colors.border),
+                                borderRadius: "6px",
+                                background: isActive ? "rgba(112, 225, 232, 0.08)" : "rgba(7, 11, 22, 0.5)",
+                                color: colors.text,
+                                cursor: "pointer",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "space-between",
+                                gap: "10px"
+                            }
+                        },
+                            h("div", { style: { display: "flex", gap: "12px", alignItems: "center" } },
+                                h("img", {
+                                    src: "/static/imgs/" + mod.image,
+                                    alt: mod.name,
+                                    style: {
+                                        width: "52px",
+                                        height: "52px",
+                                        objectFit: "cover",
+                                        borderRadius: "6px",
+                                        border: "1px solid " + colors.border,
+                                        background: "#070b16"
+                                    }
+                                }),
+                                h("div", { style: { flex: 1, minWidth: 0 } },
+                                    h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" } },
+                                        h("span", { style: { fontSize: "13px", fontWeight: 800, color: isActive ? colors.cyan : colors.text } }, mod.name),
+                                        h("span", {
+                                            style: {
+                                                padding: "2px 7px",
+                                                borderRadius: "4px",
+                                                fontSize: "9px",
+                                                fontWeight: 800,
+                                                background: isActive ? colors.cyan : "rgba(255,255,255,0.08)",
+                                                color: isActive ? "#070b16" : colors.muted
+                                            }
+                                        }, isActive ? "EQUIPPED" : "ADD")
+                                    ),
+                                    h("div", {
+                                        style: {
+                                            display: "flex",
+                                            gap: "8px",
+                                            marginTop: "4px",
+                                            fontSize: "10px",
+                                            fontWeight: 700
+                                        }
+                                    },
+                                        h("span", { style: { color: colors.muted } }, Number(mod.mass_kg).toLocaleString() + " kg"),
+                                        h("span", { style: { color: colors.muted } }, "·"),
+                                        h("span", { style: { color: mod.is_generator ? colors.green : colors.orange } }, powerLabel)
+                                    )
+                                )
+                            ),
+                            h("div", { style: { fontSize: "11px", lineHeight: 1.5, color: colors.muted, borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "8px" } },
+                                h("p", { style: { margin: "0 0 4px 0" } },
+                                    h("strong", { style: { color: colors.green } }, "+ Benefit: "),
+                                    mod.pros
+                                ),
+                                h("p", { style: { margin: 0 } },
+                                    h("strong", { style: { color: colors.red } }, "− Drawback: "),
+                                    mod.cons
+                                )
+                            )
+                        );
+                    })
+                )
+            ),
+
+            // Botão Start Game movido para o FINAL da página de planejamento
+            h("div", {
+                style: {
+                    marginTop: "32px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "24px",
+                    border: "1px solid " + colors.cyan,
+                    borderRadius: "8px",
+                    background: "rgba(112, 225, 232, 0.04)"
+                }
+            },
+                h("div", { style: { fontSize: "12px", color: colors.cyan, fontWeight: 700, letterSpacing: "1px" } },
+                    "READY FOR LAUNCH? REVIEW YOUR TELEMETRY AND START MISSION"
+                ),
+                h("a", {
+                    href: gameUrl,
+                    "aria-label": "Start the Mars colony game",
+                    style: {
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "12px",
+                        minHeight: "56px",
+                        width: "min(400px, 100%)",
+                        borderRadius: "6px",
+                        background: colors.orange,
+                        color: "#160c0a",
+                        fontSize: "13px",
+                        fontWeight: 900,
+                        letterSpacing: "1.3px",
+                        textDecoration: "none",
+                        boxShadow: "0 10px 30px rgba(255, 118, 74, .25)"
+                    }
+                }, "START GAME", h("span", { "aria-hidden": "true", style: { fontSize: "18px" } }, "→"))
+            )
+        );
+    }
+
+    return h("main", { style: page },
+        h("header", {
+            style: Object.assign({}, container, {
+                minHeight: "88px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "24px",
+                borderBottom: "1px solid " + colors.border
+            })
+        },
+            h("a", {
+                href: "/",
+                style: {
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    color: colors.text,
+                    textDecoration: "none"
+                }
+            },
+                h("span", {
+                    style: {
+                        width: "38px",
+                        height: "38px",
+                        display: "grid",
+                        placeItems: "center",
+                        border: "1px solid rgba(112, 225, 232, .6)",
+                        borderRadius: "50%",
+                        color: colors.cyan,
+                        fontSize: "19px"
+                    }
+                }, "✦"),
+                h("span", { style: { fontSize: "12px", lineHeight: 1.35, letterSpacing: "1.5px", fontWeight: 800 } },
+                    "NASA SPACE APPS",
+                    h("br"),
+                    h("span", { style: { color: colors.muted, fontSize: "10px", fontWeight: 500 } }, "MARS CHALLENGE")
+                )
+            ),
+            h("div", {
+                style: {
+                    color: colors.cyan,
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    letterSpacing: "1.8px",
+                    textAlign: "right"
+                }
+            }, "MISSION CONTROL", h("br"), h("span", {
+                style: { color: colors.muted, fontWeight: 500, letterSpacing: "1px" }
+            }, "MISSION MARS // 2045"))
+        ),
+
+        screen === "landing" ? h(React.Fragment, null,
+            h("section", {
+                style: Object.assign({}, container, {
+                    minHeight: "590px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "32px",
+                    paddingTop: "54px",
+                    paddingBottom: "54px",
+                    boxSizing: "border-box",
+                    flexWrap: "wrap"
+                })
+            },
+                h("div", { style: { flex: "1 1 440px", maxWidth: "570px", zIndex: 1 } },
+                    h("div", {
+                        style: {
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "9px",
+                            padding: "8px 12px",
+                            border: "1px solid rgba(112, 225, 232, .28)",
+                            borderRadius: "4px",
+                            background: "rgba(112, 225, 232, .06)",
+                            color: colors.cyan,
+                            fontSize: "10px",
+                            letterSpacing: "1.7px",
+                            fontWeight: 800
+                        }
+                    }, h("span", { style: { color: colors.orange } }, "●"), " MISSION SIMULATION // MARS"),
+                    h("h1", {
+                        style: {
+                            margin: "25px 0 18px",
+                            fontSize: "clamp(42px, 7vw, 76px)",
+                            lineHeight: 0.99,
+                            letterSpacing: "-3.5px",
+                            fontWeight: 850
+                        }
+                    }, "Humanity's", h("br"), h("span", { style: { color: colors.orange } }, "future"), h("br"), "is red."),
+                    h("p", {
+                        style: {
+                            maxWidth: "490px",
+                            margin: "0 0 30px",
+                            color: colors.muted,
+                            fontSize: "16px",
+                            lineHeight: 1.8
+                        }
+                    }, "A mission to Mars depends on making the right choices. Plan your colony, manage resources, and find out if your crew can survive on the Red Planet."),
+                    h("div", {
+                        style: {
+                            display: "flex",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: "16px"
+                        }
+                    },
+                        h("a", {
+                            href: "#planner",
+                            onClick: function (event) {
+                                event.preventDefault();
+                                setScreen("planner");
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                            },
+                            style: {
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "13px",
+                                minHeight: "54px",
+                                padding: "0 23px",
+                                borderRadius: "4px",
+                                background: colors.orange,
+                                color: "#160c0a",
+                                fontSize: "12px",
+                                fontWeight: 900,
+                                letterSpacing: "1.2px",
+                                textDecoration: "none",
+                                boxShadow: "0 10px 35px rgba(255, 118, 74, .2)"
+                            }
+                        }, "START MISSION", h("span", { "aria-hidden": "true", style: { fontSize: "18px" } }, "→")),
+                        h("span", { style: { color: colors.muted, fontSize: "11px", letterSpacing: ".5px" } }, "GET READY FOR LIFTOFF")
+                    )
+                ),
+                h("div", {
+                    style: {
+                        flex: "1 1 340px",
+                        minWidth: "0",
+                        display: "flex",
+                        justifyContent: "center",
+                        position: "relative"
+                    }
+                },
+                    h("div", {
+                        style: {
+                            position: "absolute",
+                            width: "min(420px, 90vw)",
+                            aspectRatio: "1",
+                            border: "1px solid rgba(112, 225, 232, .14)",
+                            borderRadius: "50%",
+                            boxShadow: "0 0 0 35px rgba(112, 225, 232, .025), 0 0 0 75px rgba(112, 225, 232, .02)"
+                        }
+                    }),
+                    h("img", {
+                        src: "/static/imgs/img_front.png",
+                        alt: "Astronaut standing beside a spacecraft on the surface of Mars",
+                        style: {
+                            position: "relative",
+                            display: "block",
+                            width: "min(100%, 430px)",
+                            height: "auto",
+                            objectFit: "contain",
+                            filter: "drop-shadow(0 22px 50px rgba(0, 0, 0, .45))"
+                        }
+                    }),
+                    h("div", {
+                        style: {
+                            position: "absolute",
+                            right: "0",
+                            bottom: "8%",
+                            padding: "13px 17px",
+                            border: "1px solid " + colors.border,
+                            borderRadius: "4px",
+                            background: colors.panel,
+                            backdropFilter: "blur(10px)"
+                        }
+                    },
+                        h("div", { style: { color: colors.cyan, fontSize: "9px", letterSpacing: "1.6px", fontWeight: 800 } }, "DESTINATION"),
+                        h("div", { style: { marginTop: "5px", fontSize: "14px", fontWeight: 700 } }, "MARS · 225 MILLION KM")
+                    )
+                )
+            ),
+
+            h("section", { style: Object.assign({}, container, { paddingBottom: "58px" }) },
+                h("div", {
+                    style: {
+                        display: "flex",
+                        flexWrap: "wrap",
+                        border: "1px solid " + colors.border,
+                        borderRadius: "6px",
+                        background: "rgba(15, 23, 40, .72)"
+                    }
+                }, highlights.map(function (item, index) {
+                    return h("div", {
+                        key: item.number,
+                        style: {
+                            flex: "1 1 210px",
+                            display: "flex",
+                            gap: "15px",
+                            alignItems: "flex-start",
+                            padding: "22px",
+                            boxSizing: "border-box",
+                            borderRight: index < highlights.length - 1 ? "1px solid " + colors.border : "none"
+                        }
+                    },
+                        h("span", { style: { color: colors.orange, fontSize: "12px", fontWeight: 800 } }, item.number),
+                        h("div", null,
+                            h("div", { style: { fontSize: "10px", letterSpacing: "1.3px", fontWeight: 800 } }, item.label),
+                            h("div", { style: { marginTop: "7px", color: colors.muted, fontSize: "12px" } }, item.detail)
+                        )
+                    );
+                }))
+            )
+        ) : plannerContent(),
+
+        h("footer", {
+            style: Object.assign({}, container, {
+                padding: "18px 0 25px",
+                borderTop: "1px solid " + colors.border,
+                color: colors.muted,
+                fontSize: "10px",
+                letterSpacing: ".7px",
+                display: "flex",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "10px"
+            })
+        },
+            h("span", null, "NASA SPACE APPS CHALLENGE · MARS MISSION"),
+            h("span", null, "ONE SMALL STEP TOWARD YOUR NEXT GREAT MISSION")
+        )
+    );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(h(App));
