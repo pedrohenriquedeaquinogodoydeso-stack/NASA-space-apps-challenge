@@ -16,20 +16,28 @@ NASA_CONSTANTS = {
     "WATER_L_PER_PERSON_DAY": 2.5,
     "FOOD_KG_PER_PERSON_DAY": 1.8,
     "CO2_L_PRODUCED_PER_PERSON_DAY": 350.0,
+
     # NASA-STD-3001 / Habitats (Atmosphere & Pressure)
     "TARGET_PPO2_MMHG": 150.0,         # Normoxia target: 145-155 mmHg
     "HABITAT_PRESSURE_PSI": 8.2,       # 56.5 kPa (exploration atmosphere)
     "TARGET_TEMP_C": 22.0,             # Thermal comfort: 20-25°C
     "TARGET_HUMIDITY_PCT": 45.0,       # 30-60%
+
     # Mars DRA 5.0 & Kilopower
     "MAX_PAYLOAD_MASS_KG": 30000.0,    # 30 metric tons payload limit
     "BASE_HABITAT_POWER_KWE": 30.0,    # Base continuous demand (30-40 kWe)
     "KILOPOWER_OUTPUT_KWE": 10.0,      # 10 kWe per Kilopower reactor unit
     "WPA_RECOVERY_RATE": 0.93,         # 93% water recovery (ISS standard)
+
     # Curiosity RAD & Martian Environment
     "BASE_MARS_RADIATION_MSV_DAY": 0.64,  # Real average measured by RAD (~0.64 mSv/day)
     "MIN_SHIELDING_G_CM2": 10.0,          # Minimum reference shielding
-    "EARTH_MARS_DELAY_MIN_RANGE": (4, 24) # Real comm delay range (4 to 24 m    "MSV_PER_DAY" : (0.64) #nivel de tempestagin)
+    "EARTH_MARS_DELAY_MIN_RANGE": (4, 24), # Real comm delay range (4 to 24 minutes)
+
+    # Lauching constants
+    "INITIAL_OXIGEN_KG": 500.0,  # Initial mass at launch (50 metric tons)
+    "INITIAL_WATER_L": 1500.0,  # Initial mass at launch (1.5 metric tons)
+    "INITIAL_FOOD_KG": 800.0,   # Initial mass at launch (800 kg)
 }
 
 MARS_SITES = {
@@ -77,4 +85,23 @@ MARS_SITES = {
         "comm_window_efficiency": 0.60,       # Walls restrict direct Earth line-of-sight
         "science_multiplier": 1.8,
     },
+}
+
+MODULES = {
+    "solar_array": {
+        "mass_kg": 800.0,
+        "power_kwe": 10.0
+    },
+    "wpa_recycler": {
+        "mass_kg": 1200.0,
+        "power_kwe": 5.0
+    },
+    "greenhouse": {
+        "mass_kg": 2500.0,
+        "power_kwe": 15.0
+    },
+    "moxie_isru": {
+        "mass_kg": 1000.0,
+        "power_kwe": 20.0
+    }
 }
