@@ -69,6 +69,10 @@
             ];
 
             function plannerContent() {
+                const gameUrl = "/game?crew_size=" + crewSize +
+                    "&difficulty=" + encodeURIComponent(difficulty) +
+                    "&site=" + encodeURIComponent(siteId);
+
                 return h("section", {
                     style: Object.assign({}, container, { paddingTop: "44px", paddingBottom: "60px" })
                 },
@@ -372,8 +376,28 @@
                                 crewSize + (crewSize === 1 ? " crew member" : " crew members") + " · " + selectedDifficulty.name + " difficulty",
                                 h("br"),
                                 selectedSite.name + " · " + selectedSite.temperature + "°C average"
+                                ),
+                                h("a", {
+                                    href: gameUrl,
+                                    "aria-label": "Start the Mars colony game",
+                                    style: {
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        gap: "12px",
+                                        minHeight: "50px",
+                                        padding: "0 18px",
+                                        borderRadius: "4px",
+                                        background: colors.orange,
+                                        color: "#160c0a",
+                                        fontSize: "11px",
+                                        fontWeight: 900,
+                                        letterSpacing: "1.1px",
+                                        textDecoration: "none",
+                                        boxShadow: "0 10px 28px rgba(255, 118, 74, .18)"
+                                    }
+                                }, "START GAME", h("span", { "aria-hidden": "true", style: { fontSize: "17px" } }, "→"))
                             )
-                        )
                     )
                 );
             }
