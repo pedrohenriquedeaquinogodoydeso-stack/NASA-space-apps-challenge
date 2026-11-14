@@ -9,6 +9,10 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+@app.route('/game1')
+def game1():
+    return render_template('choosedificulty.html')
+
 
 @app.route('/game')
 def game():
