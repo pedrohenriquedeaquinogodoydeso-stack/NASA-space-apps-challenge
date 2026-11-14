@@ -3,71 +3,726 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#070b16">
+    <meta name="theme-color" content="#0b1220">
     <title>Mars Colony | Gameplay</title>
+    <!--<audio src="/static/music/space.mp3" autoplay loop></audio> -->
+    <audio src="/static/music/space.mp3" autoplay loop
+       onloadedmetadata="this.volume = 0.1"></audio>
+    <style>
+        :root {
+            --bg: #0d1325;
+            --bg-deep: #070b16;
+            --panel: #101b2b;
+            --panel-alt: #1a2b3d;
+            --panel-dark: #0d1728;
+            --line: rgba(175, 201, 225, 0.2);
+            --line-strong: rgba(175, 201, 225, 0.4);
+            --sky: #7cc9ff;
+            --sand: #d49363;
+            --orange: #ff824d;
+            --cyan: #7de1ec;
+            --cyan-deep: #58b9d8;
+            --green: #a9d179;
+            --gold: #f0d77f;
+            --cream: #eaf0ff;
+            --muted: #a8b7cd;
+            --shadow: rgba(0, 0, 0, 0.38);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            background: radial-gradient(circle at 50% 20%, #17263d 0%, #0d1325 35%, #070b16 100%);
+            color: var(--cream);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 26px;
+        }
+
+        .game-page {
+            width: min(100%, 880px);
+            min-height: 620px;
+            background: linear-gradient(180deg, rgba(12, 17, 29, 0.98), rgba(12, 19, 30, 0.96));
+            border: 3px solid rgba(178, 200, 225, 0.2);
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45), inset 0 0 0 2px rgba(255, 255, 255, 0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-page::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(transparent 0%, rgba(255, 255, 255, 0.02) 100%);
+            pointer-events: none;
+        }
+
+        .hud-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            padding: 16px 14px 12px;
+            border-bottom: 2px solid var(--line);
+            gap: 12px;
+        }
+
+        .hud-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 54px;
+            border: 2px solid var(--line-strong);
+            background: rgba(23, 35, 51, 0.88);
+            color: var(--cream);
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            font-size: 11px;
+            padding: 10px 14px;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+            position: relative;
+        }
+
+        .hud-chip .mini-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 10px;
+            margin-right: 8px;
+            color: #0d1325;
+            background: linear-gradient(180deg, var(--cyan), #7db8e5);
+            box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15);
+        }
+
+        .hud-chip.right {
+            justify-content: flex-end;
+        }
+
+        .title-block {
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--orange);
+            font-weight: 800;
+        }
+
+        .title-block strong {
+            display: block;
+            font-size: 16px;
+            letter-spacing: 0.08em;
+            margin-top: 4px;
+            color: var(--cream);
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr 1fr;
+            gap: 16px;
+            padding: 18px 14px 12px;
+            align-items: start;
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 370px;
+        }
+
+        .panel-box {
+            background: rgba(15, 25, 37, 0.9);
+            border: 2px solid var(--line-strong);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+            padding: 14px 12px 12px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .panel-header .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--cyan);
+            box-shadow: 0 0 10px rgba(125, 225, 236, 0.9);
+        }
+
+        .panel-label {
+            font-size: 10px;
+            letter-spacing: 0.16em;
+            color: var(--muted);
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .panel-value {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--cream);
+            text-align: right;
+        }
+
+        .solar-scene {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 8px;
+            gap: 10px;
+            min-height: 150px;
+            border: 2px solid rgba(125, 225, 236, 0.5);
+            background:
+                linear-gradient(180deg, rgba(20, 30, 42, 0.4), rgba(15, 26, 34, 0.7)),
+                repeating-linear-gradient(
+                    90deg,
+                    rgba(255,255,255,0.03) 0 2px,
+                    transparent 2px 10px
+                );
+        }
+
+        .solar-array {
+            position: relative;
+            width: 160px;
+            height: 70px;
+            background: rgba(12, 19, 29, 0.9);
+            border: 2px solid rgba(178, 200, 225, 0.25);
+            overflow: hidden;
+        }
+
+        .solar-array::before,
+        .solar-array::after {
+            content: "";
+            position: absolute;
+            inset: 12px 8px 12px 8px;
+            background: repeating-linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.08) 0 8px,
+                rgba(0,0,0,0) 8px 16px
+            );
+            clip-path: polygon(0 100%, 0 0, 100% 0, 100% 100%);
+        }
+
+        .solar-array::after {
+            inset: 10px 20px 12px 20px;
+            background: linear-gradient(180deg, rgba(122, 183, 224, 0.5), rgba(255, 130, 77, 0.5));
+            clip-path: polygon(0 100%, 0 0, 100% 0, 100% 100%);
+        }
+
+        .solar-array .panel-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: rgba(255,255,255,0.18);
+            transform: translateX(-50%);
+        }
+
+        .panel-text {
+            font-size: 10px;
+            letter-spacing: 0.18em;
+            color: var(--muted);
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .main-hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: start;
+            padding-top: 8px;
+            gap: 12px;
+        }
+
+        .hero-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 8px 10px 4px;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--orange);
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .hero-status::before,
+        .hero-status::after {
+            content: "";
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,130,77,0.8), transparent);
+        }
+
+        .astronaut-stage {
+            position: relative;
+            width: min(100%, 240px);
+            height: 270px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 12%, rgba(129, 176, 216, 0.18), transparent 28%), rgba(10, 17, 27, 0.6);
+            border: 2px solid var(--line);
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .astronaut-stage::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(96, 123, 162, 0.04), rgba(0,0,0,0));
+        }
+
+        .astronaut {
+            position: relative;
+            width: 150px;
+            height: 170px;
+            z-index: 1;
+        }
+
+        .helmet {
+            position: absolute;
+            left: 50%;
+            top: 18px;
+            width: 108px;
+            height: 86px;
+            transform: translateX(-50%);
+            border-radius: 50% 50% 46% 46%;
+            background: linear-gradient(180deg, #dfe7f5 0%, #bfcfe8 38%, #809ec5 100%);
+            border: 4px solid rgba(17, 23, 33, 0.7);
+            box-shadow: inset 0 0 0 3px rgba(255,255,255,0.55), 0 0 14px rgba(125, 225, 236, 0.18);
+            overflow: hidden;
+        }
+
+        .helmet::before {
+            content: "";
+            position: absolute;
+            inset: 18px 20px 18px 20px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, rgba(34, 42, 62, 0.9), rgba(11, 19, 31, 0.9));
+            box-shadow: inset 0 0 0 3px rgba(125, 225, 236, 0.3);
+        }
+
+        .helmet::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: 12px;
+            width: 38px;
+            height: 18px;
+            transform: translateX(-50%);
+            border-radius: 12px;
+            background: rgba(207, 224, 234, 0.9);
+        }
+
+        .body {
+            position: absolute;
+            left: 50%;
+            top: 90px;
+            width: 96px;
+            height: 74px;
+            transform: translateX(-50%);
+            border-radius: 30px 30px 18px 18px;
+            background: linear-gradient(180deg, #dfe7f5, #a5b6d0 70%, #6d7f9b);
+            border: 4px solid rgba(17, 23, 33, 0.7);
+        }
+
+        .arm,
+        .arm.right {
+            position: absolute;
+            top: 110px;
+            width: 18px;
+            height: 56px;
+            background: linear-gradient(180deg, #dfe7f5, #9ab0d0);
+            border: 4px solid rgba(17, 23, 33, 0.7);
+            border-radius: 12px;
+        }
+
+        .arm { left: 30px; transform: rotate(18deg); }
+        .arm.right { right: 30px; transform: rotate(-18deg); }
+
+        .leg,
+        .leg.right {
+            position: absolute;
+            top: 156px;
+            width: 18px;
+            height: 52px;
+            background: linear-gradient(180deg, #dfe7f5, #8fa7ca);
+            border: 4px solid rgba(17, 23, 33, 0.7);
+            border-radius: 10px;
+        }
+
+        .leg { left: 58px; }
+        .leg.right { right: 58px; }
+
+        .hero-metrics {
+            width: min(100%, 250px);
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .metric {
+            padding: 10px 8px;
+            background: rgba(17, 29, 42, 0.88);
+            border: 2px solid var(--line);
+            text-align: center;
+        }
+
+        .metric .metric-name {
+            display: block;
+            color: var(--muted);
+            font-size: 9px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .metric .metric-value {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--cream);
+        }
+
+        .metric .metric-value.warn {
+            color: var(--orange);
+        }
+
+        .plain-panel {
+            min-height: 132px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .plain-panel .stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--line);
+            padding: 12px 0;
+            color: var(--muted);
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .plain-panel .stat:last-child {
+            border-bottom: none;
+        }
+
+        .plain-panel .stat strong {
+            color: var(--cream);
+            font-size: 12px;
+            letter-spacing: 0.05em;
+        }
+
+        .action-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            padding: 4px 14px 18px;
+        }
+
+        .action-btn {
+            appearance: none;
+            border: 2px solid rgba(146, 173, 199, 0.35);
+            background: rgba(18, 30, 45, 0.92);
+            color: var(--cream);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            cursor: pointer;
+            min-height: 54px;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            border-color: rgba(125, 225, 236, 0.6);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(180deg, rgba(255, 130, 77, 0.94), rgba(183, 85, 42, 0.94));
+            color: #1a120d;
+            border-color: rgba(255, 170, 113, 0.8);
+        }
+
+        .action-btn.success {
+            background: linear-gradient(180deg, rgba(99, 173, 123, 0.9), rgba(46, 112, 73, 0.9));
+            color: #edf9ec;
+            border-color: rgba(154, 214, 161, 0.6);
+        }
+
+        .status-toast {
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            background: rgba(7, 11, 22, 0.8);
+            border: 1px solid rgba(125, 225, 236, 0.32);
+            color: var(--cyan);
+            font-size: 10px;
+            letter-spacing: 0.16em;
+            padding: 9px 12px;
+            text-transform: uppercase;
+            font-weight: 800;
+            opacity: 0;
+            transform: translateY(-6px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            pointer-events: none;
+        }
+
+        .status-toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 760px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .hud-row {
+                grid-template-columns: 1fr;
+            }
+
+            .title-block {
+                order: -1;
+            }
+
+            .action-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-<body style="margin: 0; min-height: 100vh; color: #f4f7ff; background: radial-gradient(ellipse at 50% 20%, #17263d, #070b16 68%); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-    <main style="width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 48px;">
-        <header style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid rgba(173, 194, 225, .17);">
-            <a href="/" style="color: #70e1e8; font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-decoration: none;">← MISSION CONTROL</a>
-            <span style="color: #ff764a; font-size: 10px; font-weight: 800; letter-spacing: 1.6px;">MARS COLONY // GAMEPLAY</span>
-        </header>
+<body>
+    <main class="game-page" aria-label="Mars colony game interface">
+        <div class="status-toast" id="statusToast">System status: nominal</div>
 
-        <section style="padding: 28px 0 20px;">
-            <div style="color: #a7b3c9; font-size: 10px; letter-spacing: 1.2px;">MISSION STATUS</div>
-            <h1 style="margin: 8px 0 18px; font-size: clamp(26px, 4vw, 38px);">Your colony is online.</h1>
-            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                <span style="padding: 9px 12px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 4px; background: rgba(17, 26, 45, .78); font-size: 11px;">CREW: {{ crew_size }}</span>
-                <span style="padding: 9px 12px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 4px; background: rgba(17, 26, 45, .78); font-size: 11px;">DIFFICULTY: {{ difficulty }}</span>
-                <span style="padding: 9px 12px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 4px; background: rgba(17, 26, 45, .78); font-size: 11px;">{{ site_name }} · {{ temperature }}°C · {{ site.latitude }}°</span>
+        <div class="hud-row">
+            <button class="hud-chip" type="button" data-action="solar">
+                <span class="mini-badge">☀</span>
+                Solar sensors
+            </button>
+
+            <div class="title-block">
+                Mars Colony
+                <strong>Mission Control</strong>
             </div>
+
+            <button class="hud-chip right" type="button" data-action="food">
+                <span class="mini-badge">▣</span>
+                Colony Food
+            </button>
+        </div>
+
+        <section class="main-layout">
+            <aside class="side-panel">
+                <div class="panel-box plain-panel">
+                    <div class="panel-header">
+                        <div class="panel-label">Solar</div>
+                        <div class="dot"></div>
+                    </div>
+                    <div class="solar-scene" aria-label="solar array status">
+                        <div class="solar-array" aria-hidden="true">
+                            <span class="panel-line"></span>
+                        </div>
+                        <div class="panel-text" id="solarStatusText">Optimal power</div>
+                    </div>
+                </div>
+
+                <div class="panel-box plain-panel">
+                    <div class="panel-header">
+                        <div class="panel-label">Power</div>
+                        <div class="panel-value" id="powerValue">{{ "%.0f"|format(site.solar_efficiency * 100) }}%</div>
+                    </div>
+                    <div class="stat"><span>Input</span><strong id="powerInput">{{ "%.1f"|format(site.solar_efficiency) }}×</strong></div>
+                    <div class="stat"><span>Risk</span><strong id="powerRisk">Low</strong></div>
+                </div>
+            </aside>
+
+            <div class="main-hero">
+                <div class="hero-status">Crew {{ crew_size }} · {{ difficulty }}</div>
+
+                <div class="astronaut-stage" aria-label="astronaut in habitat">
+                    <div class="astronaut" aria-hidden="true">
+                        <div class="helmet"></div>
+                        <div class="arm"></div>
+                        <div class="arm right"></div>
+                        <div class="body"></div>
+                        <div class="leg"></div>
+                        <div class="leg right"></div>
+                    </div>
+                </div>
+
+                <div class="hero-metrics">
+                    <div class="metric">
+                        <span class="metric-name">O₂</span>
+                        <span class="metric-value" id="oxygenMetric">{{ "%.2f"|format(daily_requirements.oxygen_kg) }}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-name">Water</span>
+                        <span class="metric-value" id="waterMetric">{{ "%.2f"|format(daily_requirements.water_l) }}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-name">Food</span>
+                        <span class="metric-value warn" id="foodMetric">{{ "%.2f"|format(daily_requirements.food_kg) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="side-panel">
+                <div class="panel-box plain-panel">
+                    <div class="panel-header">
+                        <div class="panel-label">Supplies</div>
+                        <div class="dot" style="background: var(--green);"></div>
+                    </div>
+                    <div class="stat"><span>Food</span><strong id="foodStock">{{ "%.2f"|format(daily_requirements.food_kg) }} kg</strong></div>
+                    <div class="stat"><span>Water</span><strong id="waterStock">{{ "%.2f"|format(daily_requirements.water_l) }} L</strong></div>
+                    <div class="stat"><span>O₂</span><strong id="oxygenStock">{{ "%.2f"|format(daily_requirements.oxygen_kg) }} kg</strong></div>
+                </div>
+
+                <div class="panel-box plain-panel">
+                    <div class="panel-header">
+                        <div class="panel-label">Habitat</div>
+                        <div class="panel-value" id="habitatStatus">Stable</div>
+                    </div>
+                    <div class="stat"><span>Temp</span><strong>{{ habitat_targets.temperature_c }}°C</strong></div>
+                    <div class="stat"><span>Pressure</span><strong>{{ habitat_targets.pressure_psi }} psi</strong></div>
+                    <div class="stat"><span>Humidity</span><strong>{{ habitat_targets.humidity_pct }}%</strong></div>
+                </div>
+            </aside>
         </section>
 
-        <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; padding: 4px 0 24px;">
-            <article style="padding: 16px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 6px; background: rgba(17, 26, 45, .78);">
-                <h2 style="margin: 0 0 12px; font-size: 14px;">Daily crew requirements</h2>
-                <div style="color: #c6d0e2; font-size: 12px; line-height: 1.8;">
-                    O₂: {{ "%.2f"|format(daily_requirements.oxygen_kg) }} kg ·
-                    Water: {{ "%.2f"|format(daily_requirements.water_l) }} L<br>
-                    Food: {{ "%.2f"|format(daily_requirements.food_kg) }} kg ·
-                    CO₂ produced: {{ "%.2f"|format(daily_requirements.co2_l) }} L
-                </div>
-            </article>
-            <article style="padding: 16px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 6px; background: rgba(17, 26, 45, .78);">
-                <h2 style="margin: 0 0 12px; font-size: 14px;">Habitat targets</h2>
-                <div style="color: #c6d0e2; font-size: 12px; line-height: 1.8;">
-                    O₂ partial pressure: {{ habitat_targets.oxygen_partial_pressure_mmhg }} mmHg<br>
-                    Pressure: {{ habitat_targets.pressure_psi }} psi ·
-                    Temperature: {{ habitat_targets.temperature_c }}°C<br>
-                    Humidity: {{ habitat_targets.humidity_pct }}%
-                </div>
-            </article>
-            <article style="padding: 16px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 6px; background: rgba(17, 26, 45, .78);">
-                <h2 style="margin: 0 0 12px; font-size: 14px;">Landing site conditions</h2>
-                <div style="color: #c6d0e2; font-size: 12px; line-height: 1.8;">
-                    Solar efficiency: {{ site.solar_efficiency }}× ·
-                    Water ice access: {{ "Yes" if site.isru_water_access else "No" }}<br>
-                    Estimated radiation: {{ "%.2f"|format(radiation_msv_day) }} mSv/day<br>
-                    Science multiplier: {{ site.science_multiplier }}×
-                </div>
-            </article>
-        </section>
-
-        <p style="margin: 0 0 18px; color: #a7b3c9; font-size: 11px; line-height: 1.6;">
-            Scenario estimates are read from <code>src/constants.py</code>; that file currently marks these values as pending NASA-reference verification.
-        </p>
-
-        <figure style="margin: 0; overflow: auto; border: 1px solid rgba(112, 225, 232, .28); border-radius: 6px; background: #080b10; box-shadow: 0 24px 70px rgba(0, 0, 0, .35);">
-            <img
-                src="{{ url_for('static', filename='pixellab-gameplay-interface-1794665278209.png') }}"
-                alt="Pixel art Mars colony gameplay interface showing solar sensors, colony food, supplies, and mission choices"
-                style="display: block; width: min(100%, 1032px); height: auto; margin: 0 auto; image-rendering: pixelated;"
-            >
-        </figure>
-
-        <p style="margin: 14px 0 0; color: #a7b3c9; font-size: 11px; line-height: 1.6;">
-            Gameplay interface preview. Mission controls in this artwork are not interactive yet.
-        </p>
+        <div class="action-row">
+            <button class="action-btn" type="button" data-action="shelter">Stay inside</button>
+            <button class="action-btn primary" type="button" data-action="sendMore">Send more</button>
+            <button class="action-btn success" type="button" data-action="repair">Repair</button>
+        </div>
     </main>
+
+    <script>
+        const toast = document.getElementById('statusToast');
+        const solarStatusText = document.getElementById('solarStatusText');
+        const powerValue = document.getElementById('powerValue');
+        const powerInput = document.getElementById('powerInput');
+        const powerRisk = document.getElementById('powerRisk');
+        const habitatStatus = document.getElementById('habitatStatus');
+
+        const state = {
+            solar: {{ site.solar_efficiency }},
+            power: {{ site.solar_efficiency * 100 }},
+            food: {{ daily_requirements.food_kg }},
+            water: {{ daily_requirements.water_l }},
+            oxygen: {{ daily_requirements.oxygen_kg }}
+        };
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('visible');
+            clearTimeout(showToast.timer);
+            showToast.timer = setTimeout(() => toast.classList.remove('visible'), 1200);
+        }
+
+        function applySolarStatus() {
+            if (state.solar >= 1.2) {
+                solarStatusText.textContent = 'Optimal power';
+                powerRisk.textContent = 'Low';
+                habitatStatus.textContent = 'Stable';
+            } else if (state.solar >= 0.9) {
+                solarStatusText.textContent = 'Balanced output';
+                powerRisk.textContent = 'Moderate';
+                habitatStatus.textContent = 'Stable';
+            } else {
+                solarStatusText.textContent = 'Dust covered';
+                powerRisk.textContent = 'High';
+                habitatStatus.textContent = 'Alert';
+            }
+
+            state.power = Math.max(30, Math.min(100, state.solar * 100));
+            powerValue.textContent = Math.round(state.power) + '%';
+            powerInput.textContent = state.solar.toFixed(1) + '×';
+        }
+
+        function updateResources() {
+            document.getElementById('foodStock').textContent = state.food.toFixed(2) + ' kg';
+            document.getElementById('waterStock').textContent = state.water.toFixed(2) + ' L';
+            document.getElementById('oxygenStock').textContent = state.oxygen.toFixed(2) + ' kg';
+            document.getElementById('foodMetric').textContent = state.food.toFixed(2);
+            document.getElementById('waterMetric').textContent = state.water.toFixed(2);
+            document.getElementById('oxygenMetric').textContent = state.oxygen.toFixed(2);
+        }
+
+        document.querySelectorAll('[data-action]').forEach((button) => {
+            button.addEventListener('click', function () {
+                const action = this.dataset.action;
+
+                if (action === 'solar') {
+                    state.solar = state.solar >= 1.2 ? 0.8 : state.solar + 0.2;
+                    applySolarStatus();
+                    showToast('Solar sensors updated');
+                }
+
+                if (action === 'food') {
+                    state.food += 12.5;
+                    updateResources();
+                    showToast('Food reserves increased');
+                }
+
+                if (action === 'shelter') {
+                    state.solar = Math.max(0.5, state.solar - 0.1);
+                    state.food = Math.max(0, state.food - 2.5);
+                    state.water = Math.max(0, state.water - 1.5);
+                    applySolarStatus();
+                    updateResources();
+                    showToast('Crew sheltered');
+                }
+
+                if (action === 'sendMore') {
+                    state.food += 18;
+                    state.water += 14;
+                    state.oxygen += 11;
+                    updateResources();
+                    showToast('Resupply sent');
+                }
+
+                if (action === 'repair') {
+                    state.solar = Math.min(1.5, state.solar + 0.45);
+                    applySolarStatus();
+                    showToast('Solar array repaired');
+                }
+            });
+        });
+
+        applySolarStatus();
+        updateResources();
+    </script>
 </body>
 </html>

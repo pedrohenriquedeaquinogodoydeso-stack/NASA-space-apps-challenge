@@ -58,6 +58,10 @@ def preview_loadout():
     )
     return jsonify(loadout.to_dict())
 
+@app.route('/game1')
+def game1():
+    return render_template('choosedificulty.html')
+
 
 @app.route('/game')
 def game():
