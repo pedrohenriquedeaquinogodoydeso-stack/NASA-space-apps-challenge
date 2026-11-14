@@ -177,11 +177,11 @@ def game_situation():
     ):
         abort(400)
 
-    solar = number_from_payload(payload, 'solar', 0.5, 1.5)
+    solar = number_from_payload(payload, 'solar', 0, 1.5)
     integrity = number_from_payload(payload, 'integrity', 0, 100)
 
     if action == 'yes':
-        solar = max(0.5, solar - 0.1)
+        solar = max(0, solar - 0.1)
         message = SITUATION['yes_consequence']
     else:
         integrity = max(0, integrity - 10)
@@ -189,7 +189,7 @@ def game_situation():
 
     return jsonify(
         solar=solar,
-        power=max(30, min(100, solar * 100)),
+        power=max(0, min(100, solar * 100)),
         integrity=integrity,
         message=message,
         situation=maybe_create_situation(),

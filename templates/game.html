@@ -723,6 +723,42 @@
             transform: translateY(0);
         }
 
+        .game-over {
+            position: absolute;
+            z-index: 30;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            background: rgba(5, 8, 16, 0.9);
+            text-align: center;
+        }
+
+        .game-over[hidden] {
+            display: none;
+        }
+
+        .game-over-content {
+            width: min(100%, 420px);
+            padding: 32px 24px;
+            border: 2px solid rgba(255, 130, 77, 0.65);
+            background: linear-gradient(180deg, #1a202e, #101522);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-over-title {
+            margin: 0 0 12px;
+            color: var(--orange);
+            font-size: clamp(28px, 8vw, 42px);
+            letter-spacing: 0.14em;
+        }
+
+        .game-over-reason {
+            margin: 0 0 24px;
+            color: var(--cream);
+            font-size: 16px;
+        }
+
         @media (max-width: 760px) {
             .main-layout {
                 grid-template-columns: 1fr;
@@ -749,6 +785,13 @@
 <body>
     <main class="game-page" aria-label="Mars colony game interface">
         <div class="status-toast" id="statusToast">System status: nominal</div>
+        <section class="game-over" id="gameOver" role="dialog" aria-modal="true" aria-labelledby="gameOverTitle" hidden>
+            <div class="game-over-content">
+                <h1 class="game-over-title" id="gameOverTitle">GAME OVER</h1>
+                <p class="game-over-reason" id="gameOverReason"></p>
+                <button class="action-btn primary" type="button" onclick="window.location.reload()">Jogar novamente</button>
+            </div>
+        </section>
 
         <div class="hud-row">
             <button class="hud-chip" type="button" data-action="solar">
@@ -882,6 +925,8 @@
         const situationPanel = document.getElementById('situationPanel');
         const situationText = document.getElementById('situationText');
         const equipmentIntegrity = document.getElementById('equipmentIntegrity');
+        const gameOver = document.getElementById('gameOver');
+        const gameOverReason = document.getElementById('gameOverReason');
         const situationRetryDelay = 1000;
 
         const state = {
@@ -895,6 +940,32 @@
 
         let currentSituationId = null;
         let situationRetryTimer = null;
+        let isGameOver = false;
+
+        function checkGameOver() {
+            if (isGameOver) {
+                return;
+            }
+
+            const reason = state.food <= 0
+                ? 'Você morreu de fome: os suprimentos de comida acabaram.'
+                : state.power <= 0
+                    ? 'Você morreu por falta de energia: a colônia ficou sem energia.'
+                    : null;
+
+            if (!reason) {
+                return;
+            }
+
+            isGameOver = true;
+            clearTimeout(situationRetryTimer);
+            situationPanel.classList.remove('visible');
+            document.querySelectorAll('[data-action], #answerYes, #answerNo').forEach((button) => {
+                button.disabled = true;
+            });
+            gameOverReason.textContent = reason;
+            gameOver.hidden = false;
+        }
 
         function showToast(message) {
             toast.textContent = message;
@@ -918,9 +989,10 @@
                 habitatStatus.textContent = 'Alert';
             }
 
-            state.power = Math.max(30, Math.min(100, state.solar * 100));
+            state.power = Math.max(0, Math.min(100, state.solar * 100));
             powerValue.textContent = Math.round(state.power) + '%';
             powerInput.textContent = state.solar.toFixed(1) + '×';
+            checkGameOver();
         }
 
         function updateResources() {
@@ -953,6 +1025,10 @@
         }
 
         function mostrarSituacao(situation) {
+            if (isGameOver) {
+                return;
+            }
+
             clearTimeout(situationRetryTimer);
             currentSituationId = situation ? situation.id : null;
             if (situation) {
@@ -965,6 +1041,10 @@
         }
 
         async function novaSituacao() {
+            if (isGameOver) {
+                return;
+            }
+
             try {
                 const result = await enviarAcaoSituacao('next');
                 mostrarSituacao(result.situation);
@@ -975,12 +1055,16 @@
         }
 
         async function responderSituacao(action) {
-            if (currentSituationId === null) {
+            if (isGameOver || currentSituationId === null) {
                 return;
             }
 
             try {
                 const result = await enviarAcaoSituacao(action);
+                if (isGameOver) {
+                    return;
+                }
+
                 state.solar = result.solar;
                 state.power = result.power;
                 state.integrity = result.integrity;
@@ -1003,6 +1087,10 @@
 
         document.querySelectorAll('[data-action]').forEach((button) => {
             button.addEventListener('click', function () {
+                if (isGameOver) {
+                    return;
+                }
+
                 const action = this.dataset.action;
 
                 if (action === 'solar') {
@@ -1018,7 +1106,7 @@
                 }
 
                 if (action === 'shelter') {
-                    state.solar = Math.max(0.5, state.solar - 0.1);
+                    state.solar = Math.max(0, state.solar - 0.1);
                     state.food = Math.max(0, state.food - 2.5);
                     state.water = Math.max(0, state.water - 1.5);
                     applySolarStatus();
@@ -1027,6 +1115,7 @@
                 }
 
                 if (action === 'sendMore') {
+                    ///tocar som de click
                     state.food += 18;
                     state.water += 14;
                     state.oxygen += 11;
@@ -1035,6 +1124,8 @@
                 }
 
                 if (action === 'repair') {
+                    let audio = new Audio('/static/music/click.mp3');
+                    audio.play();
                     state.solar = Math.min(1.5, state.solar + 0.45);
                     applySolarStatus();
                     showToast('Solar array repaired');
