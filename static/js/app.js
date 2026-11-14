@@ -1,3 +1,8 @@
+/*
+  Mars Mission Planner - Frontend Application Logic
+  Handles user interface interactions, telemetry updates, and API communications.
+*/
+
 const h = React.createElement;
 const BOOTSTRAP = JSON.parse(document.getElementById("mission-bootstrap").textContent);
 
@@ -50,7 +55,7 @@ function App() {
         NASA_CONSTANTS.INITIAL_WATER_L +
         NASA_CONSTANTS.INITIAL_FOOD_KG;
 
-    // Dependência corrigida para evitar loops e garantir atualização correta da massa
+    // Fetch dynamic loadout calculations from backend when parameters change
     React.useEffect(function () {
         let cancelled = false;
         fetch("/api/preview_loadout", {
@@ -133,7 +138,7 @@ function App() {
                 }, "Configure your landing site, rocket propulsion architecture, surface payload modules, and crew before launch.")
             ),
 
-            // Top row: Map & Sidebar Telemetry Preview
+            // Top section: Map & Expanded Telemetry Preview Sidebar
             h("div", {
                 style: {
                     display: "flex",
@@ -231,7 +236,7 @@ function App() {
                                         width: "8px",
                                         height: "8px",
                                         borderRadius: "50%",
-                                        background: site.avg_temp_c <= -60 ? "#70d6ff" : site.avg_temp_c <= -50 ? "#ffb05e" : "#ff654a",
+                                       background: site.avg_temp_c <= -60 ? "#70d6ff" : site.avg_temp_c <= -50 ? "#ffb05e" : "#ff654a",
                                         boxShadow: "0 0 10px currentColor"
                                     }
                                 }),
@@ -271,36 +276,68 @@ function App() {
                         }),
                         h("span", null, "WARMER")
                     ),
+                    // Landing site details card featuring a larger, prominent site image and detailed scientific description
                     h("div", {
                         style: {
                             marginTop: "18px",
-                            padding: "15px",
+                            padding: "16px",
                             border: "1px solid " + colors.border,
-                            borderRadius: "5px",
-                            background: "rgba(7, 11, 22, .58)",
+                            borderRadius: "6px",
+                            background: "rgba(7, 11, 22, .65)",
                             display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            flexWrap: "wrap",
-                            gap: "12px"
+                            flexDirection: "column",
+                            gap: "14px"
                         }
                     },
-                        h("div", null,
-                            h("div", { style: { color: colors.cyan, fontSize: "9px", letterSpacing: "1.3px", fontWeight: 800 } }, "SELECTED LANDING SITE"),
-                            h("div", { style: { marginTop: "5px", fontSize: "15px", fontWeight: 700 } }, selectedSite.name),
-                            h("div", { style: { marginTop: "4px", color: colors.muted, fontSize: "11px" } },
-                                "Latitude " + selectedSite.latitude_label +
-                                " · Solar Efficiency " + Math.round(selectedSite.solar_efficiency * 100) + "%" +
-                                " · Science " + selectedSite.science_multiplier + "x"
+                        h("img", {
+                            src: "/static/imgs/" + selectedSite.image,
+                            alt: selectedSite.name,
+                            style: {
+                                width: "100%",
+                                height: "400px",
+                                objectFit: "cover",
+                                borderRadius: "4px",
+                                border: "1px solid " + colors.border,
+                                background: "#070b16"
+                            }
+                        }),
+                        h("div", {
+                            style: {
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "flex-start",
+                                flexWrap: "wrap",
+                                gap: "10px"
+                            }
+                        },
+                            h("div", { style: { flex: 1, minWidth: "200px" } },
+                                h("div", { style: { color: colors.cyan, fontSize: "9px", letterSpacing: "1.3px", fontWeight: 800 } }, "SELECTED LANDING SITE"),
+                                h("div", { style: { marginTop: "4px", fontSize: "16px", fontWeight: 800 } }, selectedSite.name),
+                                h("div", { style: { marginTop: "3px", color: colors.muted, fontSize: "11px" } },
+                                    "Latitude " + selectedSite.latitude_label +
+                                    " · Solar Efficiency " + Math.round(selectedSite.solar_efficiency * 100) + "%" +
+                                    " · Science Multiplier " + selectedSite.science_multiplier + "x"
+                                )
+                            ),
+                            h("div", { style: { textAlign: "right" } },
+                                h("div", { style: { color: colors.muted, fontSize: "9px", letterSpacing: "1px" } }, "AVG. SURFACE TEMP."),
+                                h("div", { style: { marginTop: "2px", color: colors.orange, fontSize: "22px", fontWeight: 800 } }, selectedSite.avg_temp_c + "°C")
                             )
                         ),
-                        h("div", { style: { textAlign: "right" } },
-                            h("div", { style: { color: colors.muted, fontSize: "9px", letterSpacing: "1px" } }, "AVG. SURFACE TEMP."),
-                            h("div", { style: { marginTop: "3px", color: colors.orange, fontSize: "24px", fontWeight: 800 } }, selectedSite.avg_temp_c + "°C")
-                        )
+                        h("p", {
+                            style: {
+                                margin: 0,
+                                color: colors.muted,
+                                fontSize: "12px",
+                                lineHeight: 1.65,
+                                borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                                paddingTop: "10px"
+                            }
+                        }, selectedSite.description)
                     )
                 ),
 
+                // Expanded Mission Telemetry Preview including NASA baseline constants
                 h("aside", {
                     style: {
                         flex: "1 1 300px",
@@ -352,12 +389,12 @@ function App() {
                     h("div", {
                         "aria-live": "polite",
                         style: {
-                            padding: "16px",
+                            padding: "18px",
                             borderLeft: "2px solid " + colors.orange,
                             background: "rgba(255, 118, 74, .07)",
                             color: colors.muted,
                             fontSize: "11px",
-                            lineHeight: 1.75
+                            lineHeight: 1.8
                         }
                     },
                         h("strong", { style: { color: colors.text, letterSpacing: "0.8px" } }, "MISSION TELEMETRY PREVIEW"),
@@ -376,12 +413,30 @@ function App() {
                         h("strong", { style: { color: loadoutPreview.net_module_power_kwe >= 0 ? colors.green : colors.orange } },
                             (loadoutPreview.net_module_power_kwe >= 0 ? "+" : "") + loadoutPreview.net_module_power_kwe.toFixed(1) + " kWe"
                         ),
-                        " (Base habitat: " + loadoutPreview.base_habitat_power_kwe + " kWe)"
+                        " (Base habitat: " + loadoutPreview.base_habitat_power_kwe + " kWe)",
+                        h("div", {
+                            style: {
+                                marginTop: "10px",
+                                borderTop: "1px solid rgba(255,255,255,0.1)",
+                                paddingTop: "8px",
+                                fontSize: "10px"
+                            }
+                        },
+                            h("strong", { style: { color: colors.cyan } }, "NASA-STD-3001 Baselines:"),
+                            h("br"),
+                            "• O2 Consumption: " + NASA_CONSTANTS.O2_KG_PER_PERSON_DAY + " kg/person/day",
+                            h("br"),
+                            "• Water Need: " + NASA_CONSTANTS.WATER_L_PER_PERSON_DAY + " L/person/day",
+                            h("br"),
+                            "• Food Supply: " + NASA_CONSTANTS.FOOD_KG_PER_PERSON_DAY + " kg/person/day",
+                            h("br"),
+                            "• Surface Radiation: " + (NASA_CONSTANTS.BASE_MARS_RADIATION_MSV_DAY * (1.0 - selectedSite.natural_radiation_shielding)).toFixed(2) + " mSv/day"
+                        )
                     )
                 )
             ),
 
-            // Second Row: Rocket Architecture Selection
+            // Rocket Architecture Selection Section
             h("section", {
                 style: {
                     marginTop: "24px",
@@ -472,7 +527,7 @@ function App() {
                 )
             ),
 
-            // Third Row: Surface Modules Selection (com imagens adicionadas)
+            // Surface Modules Selection Section
             h("section", {
                 style: {
                     marginTop: "24px",
@@ -535,7 +590,7 @@ function App() {
                         },
                             h("div", { style: { display: "flex", gap: "12px", alignItems: "center" } },
                                 h("img", {
-                                    src: "/static/imgs/" + mod.image,
+                                    src: "/static/" + mod.image,
                                     alt: mod.name,
                                     style: {
                                         width: "52px",
@@ -590,7 +645,7 @@ function App() {
                 )
             ),
 
-            // Botão Start Game movido para o FINAL da página de planejamento
+            // Start Game action button positioned at the very bottom of the planner
             h("div", {
                 style: {
                     marginTop: "32px",
@@ -786,7 +841,7 @@ function App() {
                         }
                     }),
                     h("img", {
-                        src: "/static/imgs/img_front.png",
+                        src: "/static/imgs/astronaut_front.png",
                         alt: "Astronaut standing beside a spacecraft on the surface of Mars",
                         style: {
                             position: "relative",
