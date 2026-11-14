@@ -19,9 +19,43 @@
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                 <span style="padding: 9px 12px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 4px; background: rgba(17, 26, 45, .78); font-size: 11px;">CREW: {{ crew_size }}</span>
                 <span style="padding: 9px 12px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 4px; background: rgba(17, 26, 45, .78); font-size: 11px;">DIFFICULTY: {{ difficulty }}</span>
-                <span style="padding: 9px 12px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 4px; background: rgba(17, 26, 45, .78); font-size: 11px;">{{ site_name }} · {{ temperature }}°C</span>
+                <span style="padding: 9px 12px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 4px; background: rgba(17, 26, 45, .78); font-size: 11px;">{{ site_name }} · {{ temperature }}°C · {{ site.latitude }}°</span>
             </div>
         </section>
+
+        <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; padding: 4px 0 24px;">
+            <article style="padding: 16px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 6px; background: rgba(17, 26, 45, .78);">
+                <h2 style="margin: 0 0 12px; font-size: 14px;">Daily crew requirements</h2>
+                <div style="color: #c6d0e2; font-size: 12px; line-height: 1.8;">
+                    O₂: {{ "%.2f"|format(daily_requirements.oxygen_kg) }} kg ·
+                    Water: {{ "%.2f"|format(daily_requirements.water_l) }} L<br>
+                    Food: {{ "%.2f"|format(daily_requirements.food_kg) }} kg ·
+                    CO₂ produced: {{ "%.2f"|format(daily_requirements.co2_l) }} L
+                </div>
+            </article>
+            <article style="padding: 16px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 6px; background: rgba(17, 26, 45, .78);">
+                <h2 style="margin: 0 0 12px; font-size: 14px;">Habitat targets</h2>
+                <div style="color: #c6d0e2; font-size: 12px; line-height: 1.8;">
+                    O₂ partial pressure: {{ habitat_targets.oxygen_partial_pressure_mmhg }} mmHg<br>
+                    Pressure: {{ habitat_targets.pressure_psi }} psi ·
+                    Temperature: {{ habitat_targets.temperature_c }}°C<br>
+                    Humidity: {{ habitat_targets.humidity_pct }}%
+                </div>
+            </article>
+            <article style="padding: 16px; border: 1px solid rgba(173, 194, 225, .17); border-radius: 6px; background: rgba(17, 26, 45, .78);">
+                <h2 style="margin: 0 0 12px; font-size: 14px;">Landing site conditions</h2>
+                <div style="color: #c6d0e2; font-size: 12px; line-height: 1.8;">
+                    Solar efficiency: {{ site.solar_efficiency }}× ·
+                    Water ice access: {{ "Yes" if site.isru_water_access else "No" }}<br>
+                    Estimated radiation: {{ "%.2f"|format(radiation_msv_day) }} mSv/day<br>
+                    Science multiplier: {{ site.science_multiplier }}×
+                </div>
+            </article>
+        </section>
+
+        <p style="margin: 0 0 18px; color: #a7b3c9; font-size: 11px; line-height: 1.6;">
+            Scenario estimates are read from <code>src/constants.py</code>; that file currently marks these values as pending NASA-reference verification.
+        </p>
 
         <figure style="margin: 0; overflow: auto; border: 1px solid rgba(112, 225, 232, .28); border-radius: 6px; background: #080b10; box-shadow: 0 24px 70px rgba(0, 0, 0, .35);">
             <img
