@@ -1,9 +1,50 @@
-from flask import Flask, abort, render_template, request
+import math
+import random
+
+from flask import Flask, abort, jsonify, render_template, request
 
 from src.constants import MARS_SITES, MODULES, NASA_CONSTANTS, ROCKET_ARCHITECTURES
 from src.mission_loadout import MissionLoadout
 
 app = Flask(__name__)
+
+SITUATION = {
+    'id': 1,
+    'prompt': 'A solar storm is approaching. Do you protect your equipment?',
+    'yes_consequence': 'Equipment protected; solar energy decreased.',
+    'no_consequence': 'Equipment integrity decreased.',
+}
+
+
+def maybe_create_situation():
+    if random.randint(1, 10) != 1:
+        return None
+    return {'id': SITUATION['id'], 'prompt': SITUATION['prompt']}
+
+
+def number_from_payload(payload, key, minimum, maximum):
+    value = payload.get(key)
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(value)
+        or not minimum <= value <= maximum
+    ):
+        abort(400)
+    return float(value)
+
+
+def build_loadout_from_params(crew_size: int, site_id: str, rocket_id: str, active_modules: list[str], duration_days: int = 500) -> MissionLoadout:
+    return MissionLoadout(
+        has_solar_array='solar_array' in active_modules,
+        has_wpa_recycler='wpa_recycler' in active_modules,
+        has_greenhouse='greenhouse' in active_modules,
+        has_moxie_isru='moxie_isru' in active_modules,
+        crew_size=crew_size,
+        landing_site=site_id,
+        mission_duration_days=duration_days,
+        rocket_architecture=rocket_id,
+    )
 
 
 @app.route('/')
