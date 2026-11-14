@@ -590,7 +590,7 @@ function App() {
                         },
                             h("div", { style: { display: "flex", gap: "12px", alignItems: "center" } },
                                 h("img", {
-                                    src: "/static/" + mod.image,
+                                    src: "/static/imgs/" + mod.image,
                                     alt: mod.name,
                                     style: {
                                         width: "52px",
