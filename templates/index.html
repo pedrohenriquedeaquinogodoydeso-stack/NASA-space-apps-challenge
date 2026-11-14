@@ -41,12 +41,342 @@
             margin: "0 auto"
         };
 
+        const landingSites = [
+            { id: "jezero", name: "Jezero Crater", temperature: -55, latitude: "18.38° N", left: "68%", top: "48%" },
+            { id: "arcadia", name: "Arcadia Planitia", temperature: -68, latitude: "40° N", left: "27%", top: "30%" },
+            { id: "gale", name: "Gale Crater", temperature: -45, latitude: "5.4° S", left: "82%", top: "72%" },
+            { id: "valles", name: "Valles Marineris", temperature: -50, latitude: "14° S", left: "42%", top: "74%" }
+        ];
+
+        const difficultyOptions = [
+            { id: "easy", name: "Easy", detail: "More forgiving conditions" },
+            { id: "standard", name: "Standard", detail: "Balanced mission challenge" },
+            { id: "hard", name: "Hard", detail: "Tighter survival margins" }
+        ];
+
         function App() {
+            const [screen, setScreen] = React.useState("landing");
+            const [crewSize, setCrewSize] = React.useState(4);
+            const [difficulty, setDifficulty] = React.useState("standard");
+            const [siteId, setSiteId] = React.useState("jezero");
+            const selectedSite = landingSites.find(function (site) { return site.id === siteId; });
+            const selectedDifficulty = difficultyOptions.find(function (option) { return option.id === difficulty; });
+
             const highlights = [
                 { number: "01", label: "CHOOSE A LANDING SITE", detail: "Jezero, Arcadia, and more" },
                 { number: "02", label: "BUILD YOUR MISSION", detail: "Resources, power, and crew" },
                 { number: "03", label: "SURVIVE ON MARS", detail: "Every choice shapes the outcome" }
             ];
+
+            function plannerContent() {
+                return h("section", {
+                    style: Object.assign({}, container, { paddingTop: "44px", paddingBottom: "60px" })
+                },
+                    h("button", {
+                        type: "button",
+                        onClick: function () { setScreen("landing"); },
+                        style: {
+                            padding: "8px 0",
+                            border: "none",
+                            background: "transparent",
+                            color: colors.cyan,
+                            cursor: "pointer",
+                            fontSize: "11px",
+                            fontWeight: 800,
+                            letterSpacing: "1.2px"
+                        }
+                    }, "← BACK TO OVERVIEW"),
+                    h("div", { style: { margin: "22px 0 28px" } },
+                        h("div", {
+                            style: {
+                                color: colors.orange,
+                                fontSize: "10px",
+                                fontWeight: 800,
+                                letterSpacing: "2px"
+                            }
+                        }, "MISSION PLANNER // STEP 01"),
+                        h("h1", {
+                            style: {
+                                margin: "10px 0 8px",
+                                fontSize: "clamp(34px, 5vw, 52px)",
+                                letterSpacing: "-2px"
+                            }
+                        }, "Build your mission plan"),
+                        h("p", {
+                            style: { margin: 0, color: colors.muted, fontSize: "14px", lineHeight: 1.7 }
+                        }, "Choose your crew, set the challenge, and select a landing site using its estimated average surface temperature.")
+                    ),
+                    h("div", {
+                        style: {
+                            display: "flex",
+                            alignItems: "stretch",
+                            flexWrap: "wrap",
+                            gap: "20px"
+                        }
+                    },
+                        h("section", {
+                            style: {
+                                flex: "1 1 540px",
+                                minWidth: "0",
+                                padding: "20px",
+                                border: "1px solid " + colors.border,
+                                borderRadius: "8px",
+                                background: colors.panel,
+                                boxSizing: "border-box"
+                            },
+                            "aria-label": "Mars thermal map"
+                        },
+                            h("div", {
+                                style: {
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    flexWrap: "wrap",
+                                    gap: "10px",
+                                    marginBottom: "16px"
+                                }
+                            },
+                                h("div", { style: { fontSize: "11px", fontWeight: 800, letterSpacing: "1.3px" } }, "MARS THERMAL MAP"),
+                                h("span", { style: { color: colors.muted, fontSize: "10px" } }, "SCHEMATIC · PROJECT ESTIMATES")
+                            ),
+                            h("div", {
+                                style: {
+                                    position: "relative",
+                                    minHeight: "350px",
+                                    overflow: "hidden",
+                                    border: "1px solid rgba(255,255,255,.1)",
+                                    borderRadius: "6px",
+                                    background:
+                                        "radial-gradient(ellipse at 73% 72%, rgba(255, 104, 57, .86), transparent 18%), " +
+                                        "radial-gradient(ellipse at 42% 74%, rgba(255, 139, 66, .72), transparent 20%), " +
+                                        "radial-gradient(ellipse at 68% 48%, rgba(255, 125, 68, .64), transparent 21%), " +
+                                        "radial-gradient(ellipse at 27% 30%, rgba(81, 163, 232, .85), transparent 22%), " +
+                                        "radial-gradient(ellipse at 45% 45%, rgba(187, 80, 57, .9), transparent 56%), " +
+                                        "linear-gradient(140deg, #552c38, #ad533a 48%, #482b3d)",
+                                    backgroundSize: "cover",
+                                    boxShadow: "inset 0 0 70px rgba(6, 9, 20, .55)"
+                                }
+                            },
+                                h("div", {
+                                    style: {
+                                        position: "absolute",
+                                        inset: 0,
+                                        opacity: .14,
+                                        backgroundImage: "linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)",
+                                        backgroundSize: "40px 40px",
+                                        pointerEvents: "none"
+                                    }
+                                }),
+                                landingSites.map(function (site) {
+                                    const isSelected = site.id === siteId;
+                                    return h("button", {
+                                        key: site.id,
+                                        type: "button",
+                                        onClick: function () { setSiteId(site.id); },
+                                        "aria-pressed": isSelected,
+                                        "aria-label": site.name + ", average temperature " + site.temperature + " degrees Celsius",
+                                        title: site.name + " · " + site.temperature + "°C",
+                                        style: {
+                                            position: "absolute",
+                                            left: site.left,
+                                            top: site.top,
+                                            transform: "translate(-50%, -50%)",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "7px",
+                                            padding: "7px 9px",
+                                            border: "1px solid " + (isSelected ? colors.cyan : "rgba(255,255,255,.42)"),
+                                            borderRadius: "20px",
+                                            background: isSelected ? "#0b1724" : "rgba(8, 13, 24, .78)",
+                                            color: colors.text,
+                                            cursor: "pointer",
+                                            whiteSpace: "nowrap",
+                                            boxShadow: isSelected ? "0 0 0 3px rgba(112,225,232,.2)" : "none",
+                                            fontSize: "10px",
+                                            fontWeight: 700
+                                        }
+                                    },
+                                        h("span", {
+                                            style: {
+                                                width: "8px",
+                                                height: "8px",
+                                                borderRadius: "50%",
+                                                background: site.temperature <= -60 ? "#70d6ff" : site.temperature <= -50 ? "#ffb05e" : "#ff654a",
+                                                boxShadow: "0 0 10px currentColor"
+                                            }
+                                        }),
+                                        site.name
+                                    );
+                                }),
+                                h("div", {
+                                    style: {
+                                        position: "absolute",
+                                        left: "12px",
+                                        bottom: "12px",
+                                        color: "rgba(255,255,255,.72)",
+                                        fontSize: "9px",
+                                        letterSpacing: "1.1px",
+                                        pointerEvents: "none"
+                                    }
+                                }, "N  ↑")
+                            ),
+                            h("div", {
+                                style: {
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "10px",
+                                    marginTop: "15px",
+                                    color: colors.muted,
+                                    fontSize: "10px"
+                                }
+                            },
+                                h("span", null, "COLDER"),
+                                h("span", {
+                                    style: {
+                                        flex: 1,
+                                        height: "7px",
+                                        borderRadius: "8px",
+                                        background: "linear-gradient(90deg, #54b9ed, #e1b45d, #ff654a)"
+                                    }
+                                }),
+                                h("span", null, "WARMER")
+                            ),
+                            h("div", {
+                                style: {
+                                    marginTop: "18px",
+                                    padding: "15px",
+                                    border: "1px solid " + colors.border,
+                                    borderRadius: "5px",
+                                    background: "rgba(7, 11, 22, .58)",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    flexWrap: "wrap",
+                                    gap: "12px"
+                                }
+                            },
+                                h("div", null,
+                                    h("div", { style: { color: colors.cyan, fontSize: "9px", letterSpacing: "1.3px", fontWeight: 800 } }, "SELECTED LANDING SITE"),
+                                    h("div", { style: { marginTop: "5px", fontSize: "15px", fontWeight: 700 } }, selectedSite.name),
+                                    h("div", { style: { marginTop: "4px", color: colors.muted, fontSize: "11px" } }, "Latitude " + selectedSite.latitude)
+                                ),
+                                h("div", { style: { textAlign: "right" } },
+                                    h("div", { style: { color: colors.muted, fontSize: "9px", letterSpacing: "1px" } }, "AVG. SURFACE TEMP."),
+                                    h("div", { style: { marginTop: "3px", color: colors.orange, fontSize: "24px", fontWeight: 800 } }, selectedSite.temperature + "°C")
+                                )
+                            ),
+                            h("p", {
+                                style: { margin: "12px 0 0", color: colors.muted, fontSize: "10px", lineHeight: 1.6 }
+                            }, "Temperature values are average estimates from the current project dataset; the map is a schematic, not a live NASA thermal layer.")
+                        ),
+                        h("aside", {
+                            style: {
+                                flex: "1 1 300px",
+                                minWidth: "0",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "16px"
+                            }
+                        },
+                            h("section", {
+                                style: {
+                                    padding: "20px",
+                                    border: "1px solid " + colors.border,
+                                    borderRadius: "8px",
+                                    background: colors.panel
+                                }
+                            },
+                                h("div", { style: { fontSize: "11px", fontWeight: 800, letterSpacing: "1.3px" } }, "CREW SIZE"),
+                                h("div", {
+                                    style: {
+                                        display: "flex",
+                                        alignItems: "baseline",
+                                        justifyContent: "space-between",
+                                        marginTop: "12px"
+                                    }
+                                },
+                                    h("label", { htmlFor: "crew-size", style: { color: colors.muted, fontSize: "12px" } }, "Crew members"),
+                                    h("output", {
+                                        htmlFor: "crew-size",
+                                        style: { color: colors.cyan, fontSize: "26px", fontWeight: 800 }
+                                    }, String(crewSize))
+                                ),
+                                h("input", {
+                                    id: "crew-size",
+                                    type: "range",
+                                    min: 1,
+                                    max: 12,
+                                    step: 1,
+                                    value: crewSize,
+                                    onChange: function (event) { setCrewSize(Number(event.target.value)); },
+                                    "aria-label": "Number of crew members",
+                                    style: { width: "100%", margin: "12px 0", accentColor: colors.orange, cursor: "pointer" }
+                                }),
+                                h("div", {
+                                    style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" }
+                                }, h("span", null, "1 PERSON"), h("span", null, "12 PEOPLE"))
+                            ),
+                            h("section", {
+                                style: {
+                                    padding: "20px",
+                                    border: "1px solid " + colors.border,
+                                    borderRadius: "8px",
+                                    background: colors.panel
+                                }
+                            },
+                                h("div", { style: { marginBottom: "12px", fontSize: "11px", fontWeight: 800, letterSpacing: "1.3px" } }, "MISSION DIFFICULTY"),
+                                difficultyOptions.map(function (option) {
+                                    const isSelected = option.id === difficulty;
+                                    return h("button", {
+                                        key: option.id,
+                                        type: "button",
+                                        onClick: function () { setDifficulty(option.id); },
+                                        "aria-pressed": isSelected,
+                                        style: {
+                                            width: "100%",
+                                            marginTop: "8px",
+                                            padding: "11px 12px",
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            gap: "10px",
+                                            textAlign: "left",
+                                            border: "1px solid " + (isSelected ? colors.cyan : colors.border),
+                                            borderRadius: "5px",
+                                            background: isSelected ? "rgba(112, 225, 232, .08)" : "rgba(7, 11, 22, .38)",
+                                            color: colors.text,
+                                            cursor: "pointer"
+                                        }
+                                    },
+                                        h("span", null,
+                                            h("span", { style: { display: "block", fontSize: "12px", fontWeight: 800 } }, option.name),
+                                            h("span", { style: { display: "block", marginTop: "4px", color: colors.muted, fontSize: "10px" } }, option.detail)
+                                        ),
+                                        h("span", { style: { color: isSelected ? colors.cyan : colors.muted, fontSize: "15px" } }, isSelected ? "●" : "○")
+                                    );
+                                })
+                            ),
+                            h("div", {
+                                "aria-live": "polite",
+                                style: {
+                                    padding: "16px",
+                                    borderLeft: "2px solid " + colors.orange,
+                                    background: "rgba(255, 118, 74, .07)",
+                                    color: colors.muted,
+                                    fontSize: "11px",
+                                    lineHeight: 1.7
+                                }
+                            },
+                                h("strong", { style: { color: colors.text } }, "MISSION PREVIEW"),
+                                h("br"),
+                                crewSize + (crewSize === 1 ? " crew member" : " crew members") + " · " + selectedDifficulty.name + " difficulty",
+                                h("br"),
+                                selectedSite.name + " · " + selectedSite.temperature + "°C average"
+                            )
+                        )
+                    )
+                );
+            }
 
             return h("main", { style: page },
                 h("header", {
@@ -101,6 +431,7 @@
                     }, "MISSION MARS // 2045"))
                 ),
 
+                screen === "landing" ? h(React.Fragment, null,
                 h("section", {
                     style: Object.assign({}, container, {
                         minHeight: "590px",
@@ -157,7 +488,13 @@
                             }
                         },
                             h("a", {
-                                href: "/game",
+                                href: "#planner",
+                                onClick: function (event) {
+                                    event.preventDefault();
+                                    setScreen("planner");
+                                    window.scrollTo({ top: 0, behavior: "smooth" });
+                                },
+                                "aria-label": "Start planning your Mars mission",
                                 style: {
                                     display: "inline-flex",
                                     alignItems: "center",
@@ -256,7 +593,7 @@
                             )
                         );
                     }))
-                ),
+                )) : plannerContent(),
 
                 h("footer", {
                     style: Object.assign({}, container, {
