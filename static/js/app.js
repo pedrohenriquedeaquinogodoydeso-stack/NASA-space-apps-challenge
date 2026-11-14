@@ -117,6 +117,39 @@ function App() {
                     letterSpacing: "1.2px"
                 }
             }, "← BACK TO OVERVIEW"),
+
+            // Ares V rocket banner displayed at the top of the planning screen
+            h("div", {
+                style: {
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "20px",
+                    marginTop: "20px",
+                    marginBottom: "28px",
+                    padding: "20px",
+                    border: "1px solid " + colors.border,
+                    borderRadius: "8px",
+                    background: colors.panel,
+                    flexWrap: "wrap"
+                }
+            },
+                h("img", {
+                    src: "/static/imgs/ares_v.png",
+                    alt: "Ares V Heavy-Lift Rocket Pixel Art",
+                    style: {
+                        width: "110px",
+                        height: "auto",
+                        objectFit: "contain",
+                        filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.4))"
+                    }
+                }),
+                h("div", { style: { flex: 1, minWidth: "220px" } },
+                    h("div", { style: { color: colors.cyan, fontSize: "10px", fontWeight: 800, letterSpacing: "1.5px" } }, "HEAVY-LIFT PROPULSION // ARES V"),
+                    h("h3", { style: { margin: "4px 0 6px", fontSize: "18px", fontWeight: 800 } }, "Mission Architecture & Launch Manifest"),
+                    h("p", { style: { margin: 0, color: colors.muted, fontSize: "12px", lineHeight: 1.6 } }, "Configure your surface modules, payload mass limits, and crew life support provisions before initiating terminal countdown.")
+                )
+            ),
+
             h("div", { style: { margin: "22px 0 28px" } },
                 h("div", {
                     style: {
@@ -236,7 +269,7 @@ function App() {
                                         width: "8px",
                                         height: "8px",
                                         borderRadius: "50%",
-                                       background: site.avg_temp_c <= -60 ? "#70d6ff" : site.avg_temp_c <= -50 ? "#ffb05e" : "#ff654a",
+                                        background: site.avg_temp_c <= -60 ? "#70d6ff" : site.avg_temp_c <= -50 ? "#ffb05e" : "#ff654a",
                                         boxShadow: "0 0 10px currentColor"
                                     }
                                 }),
@@ -590,7 +623,7 @@ function App() {
                         },
                             h("div", { style: { display: "flex", gap: "12px", alignItems: "center" } },
                                 h("img", {
-                                    src: "/static/imgs/" + mod.image,
+                                    src: "static/imgs/" + mod.image,
                                     alt: mod.name,
                                     style: {
                                         width: "52px",
@@ -645,26 +678,36 @@ function App() {
                 )
             ),
 
-            // Start Game action button positioned at the very bottom of the planner
+            // Bottom section featuring the launch rocket image and "3... 2... 1... LAUNCH!" button
             h("div", {
                 style: {
                     marginTop: "32px",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    gap: "12px",
+                    gap: "14px",
                     padding: "24px",
                     border: "1px solid " + colors.cyan,
                     borderRadius: "8px",
                     background: "rgba(112, 225, 232, 0.04)"
                 }
             },
-                h("div", { style: { fontSize: "12px", color: colors.cyan, fontWeight: 700, letterSpacing: "1px" } },
-                    "READY FOR LAUNCH? REVIEW YOUR TELEMETRY AND START MISSION"
+                h("img", {
+                    src: "/static/imgs/ares_v_lancamento.png",
+                    alt: "Ares V Rocket Launch Pixel Art",
+                    style: {
+                        width: "110px",
+                        height: "auto",
+                        objectFit: "contain",
+                        filter: "drop-shadow(0 10px 20px rgba(255, 118, 74, 0.35))"
+                    }
+                }),
+                h("div", { style: { fontSize: "12px", color: colors.cyan, fontWeight: 700, letterSpacing: "1px", textAlign: "center" } },
+                    "READY FOR LIFTOFF? REVIEW YOUR TELEMETRY AND INITIATE LAUNCH"
                 ),
                 h("a", {
                     href: gameUrl,
-                    "aria-label": "Start the Mars colony game",
+                    "aria-label": "Initiate Mars rocket launch",
                     style: {
                         display: "flex",
                         alignItems: "center",
@@ -681,7 +724,7 @@ function App() {
                         textDecoration: "none",
                         boxShadow: "0 10px 30px rgba(255, 118, 74, .25)"
                     }
-                }, "START GAME", h("span", { "aria-hidden": "true", style: { fontSize: "18px" } }, "→"))
+                }, "3... 2... 1... LAUNCH!", h("span", { "aria-hidden": "true", style: { fontSize: "18px" } }, "→"))
             )
         );
     }
@@ -817,7 +860,7 @@ function App() {
                                 textDecoration: "none",
                                 boxShadow: "0 10px 35px rgba(255, 118, 74, .2)"
                             }
-                        }, "START MISSION", h("span", { "aria-hidden": "true", style: { fontSize: "18px" } }, "→")),
+                        }, "Start planning", h("span", { "aria-hidden": "true", style: { fontSize: "18px" } }, "→")),
                         h("span", { style: { color: colors.muted, fontSize: "11px", letterSpacing: ".5px" } }, "GET READY FOR LIFTOFF")
                     )
                 ),
@@ -842,7 +885,7 @@ function App() {
                     }),
                     h("img", {
                         src: "/static/imgs/astronaut_front.png",
-                        alt: "Astronaut standing beside a spacecraft on the surface of Mars",
+                        alt: "An astronaut in a spacesuit, standing on the surface of Mars, with the planet's red landscape and a distant horizon in the background.",
                         style: {
                             position: "relative",
                             display: "block",

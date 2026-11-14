@@ -11,7 +11,6 @@ from dataclasses import dataclass
 @dataclass
 class MissionLoadout:
     # Modules
-    # Modules
     has_solar_array: bool
     has_wpa_recycler: bool
     has_greenhouse: bool
