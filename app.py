@@ -1,17 +1,49 @@
-from flask import Flask, abort, render_template, request
+import math
+import random
+
+from flask import Flask, abort, jsonify, render_template, request
 
 from src.constants import MARS_SITES, NASA_CONSTANTS
 
 app = Flask(__name__)
+
+SITUATION = {
+    'id': 1,
+    'prompt': 'A solar storm is approaching. Do you protect your equipment?',
+    'yes_consequence': 'Equipment protected; solar energy decreased.',
+    'no_consequence': 'Equipment integrity decreased.',
+}
+
+
+def maybe_create_situation():
+    if random.randint(1, 10) != 1:
+        return None
+    return {'id': SITUATION['id'], 'prompt': SITUATION['prompt']}
+
+
+def number_from_payload(payload, key, minimum, maximum):
+    value = payload.get(key)
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(value)
+        or not minimum <= value <= maximum
+    ):
+        abort(400)
+    return float(value)
 
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/game1')
+@app.route('/c')
 def game1():
     return render_template('choosedificulty.html')
+
+@app.route('/d')
+def game2():
+    return render_template('dict.html')
 
 
 @app.route('/game')
@@ -62,6 +94,45 @@ def game():
         daily_requirements=daily_requirements,
         habitat_targets=habitat_targets,
         radiation_msv_day=radiation_msv_day,
+    )
+
+
+@app.route('/game/situation', methods=['POST'])
+def game_situation():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        abort(400)
+
+    action = payload.get('action')
+    if action == 'next':
+        return jsonify(situation=maybe_create_situation())
+    if action not in ('yes', 'no'):
+        abort(400)
+
+    choice_index = payload.get('choice_index')
+    if (
+        isinstance(choice_index, bool)
+        or not isinstance(choice_index, int)
+        or choice_index != SITUATION['id']
+    ):
+        abort(400)
+
+    solar = number_from_payload(payload, 'solar', 0.5, 1.5)
+    integrity = number_from_payload(payload, 'integrity', 0, 100)
+
+    if action == 'yes':
+        solar = max(0.5, solar - 0.1)
+        message = SITUATION['yes_consequence']
+    else:
+        integrity = max(0, integrity - 10)
+        message = SITUATION['no_consequence']
+
+    return jsonify(
+        solar=solar,
+        power=max(30, min(100, solar * 100)),
+        integrity=integrity,
+        message=message,
+        situation=maybe_create_situation(),
     )
 
 

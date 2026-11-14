@@ -447,6 +447,39 @@
             padding: 4px 14px 18px;
         }
 
+        .event-panel {
+            display: none;
+            gap: 12px;
+            margin: 0 14px 14px;
+            padding: 14px;
+            border: 2px solid rgba(255, 130, 77, 0.55);
+            background: rgba(36, 25, 29, 0.9);
+        }
+
+        .event-panel.visible {
+            display: grid;
+        }
+
+        .event-title {
+            margin: 0;
+            color: var(--orange);
+            font-size: 11px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .event-description {
+            margin: 0;
+            color: var(--cream);
+            font-size: 14px;
+        }
+
+        .event-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
         .action-btn {
             appearance: none;
             border: 2px solid rgba(146, 173, 199, 0.35);
@@ -517,6 +550,10 @@
             }
 
             .action-row {
+                grid-template-columns: 1fr;
+            }
+
+            .event-actions {
                 grid-template-columns: 1fr;
             }
         }
@@ -617,8 +654,18 @@
                     <div class="stat"><span>Temp</span><strong>{{ habitat_targets.temperature_c }}°C</strong></div>
                     <div class="stat"><span>Pressure</span><strong>{{ habitat_targets.pressure_psi }} psi</strong></div>
                     <div class="stat"><span>Humidity</span><strong>{{ habitat_targets.humidity_pct }}%</strong></div>
+                    <div class="stat"><span>Equipment integrity</span><strong id="equipmentIntegrity">100%</strong></div>
                 </div>
             </aside>
+        </section>
+
+        <section class="event-panel" id="situationPanel" aria-live="polite">
+            <h2 class="event-title">Solar storm warning</h2>
+            <p class="event-description" id="situationText"></p>
+            <div class="event-actions">
+                <button class="action-btn primary" type="button" id="answerYes">Yes</button>
+                <button class="action-btn" type="button" id="answerNo">No</button>
+            </div>
         </section>
 
         <div class="action-row">
@@ -635,14 +682,22 @@
         const powerInput = document.getElementById('powerInput');
         const powerRisk = document.getElementById('powerRisk');
         const habitatStatus = document.getElementById('habitatStatus');
+        const situationPanel = document.getElementById('situationPanel');
+        const situationText = document.getElementById('situationText');
+        const equipmentIntegrity = document.getElementById('equipmentIntegrity');
+        const situationRetryDelay = 1000;
 
         const state = {
             solar: {{ site.solar_efficiency }},
             power: {{ site.solar_efficiency * 100 }},
             food: {{ daily_requirements.food_kg }},
             water: {{ daily_requirements.water_l }},
-            oxygen: {{ daily_requirements.oxygen_kg }}
+            oxygen: {{ daily_requirements.oxygen_kg }},
+            integrity: 100
         };
+
+        let currentSituationId = null;
+        let situationRetryTimer = null;
 
         function showToast(message) {
             toast.textContent = message;
@@ -678,7 +733,76 @@
             document.getElementById('foodMetric').textContent = state.food.toFixed(2);
             document.getElementById('waterMetric').textContent = state.water.toFixed(2);
             document.getElementById('oxygenMetric').textContent = state.oxygen.toFixed(2);
+            equipmentIntegrity.textContent = state.integrity + '%';
         }
+
+        async function enviarAcaoSituacao(action) {
+            const response = await fetch('/game/situation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: action,
+                    choice_index: currentSituationId,
+                    solar: state.solar,
+                    integrity: state.integrity
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Situation request failed with status ' + response.status);
+            }
+
+            return response.json();
+        }
+
+        function mostrarSituacao(situation) {
+            clearTimeout(situationRetryTimer);
+            currentSituationId = situation ? situation.id : null;
+            if (situation) {
+                situationText.textContent = situation.prompt;
+                situationPanel.classList.add('visible');
+            } else {
+                situationPanel.classList.remove('visible');
+                situationRetryTimer = setTimeout(novaSituacao, situationRetryDelay);
+            }
+        }
+
+        async function novaSituacao() {
+            try {
+                const result = await enviarAcaoSituacao('next');
+                mostrarSituacao(result.situation);
+            } catch (error) {
+                console.error('Unable to load a game situation.', error);
+                showToast('Unable to load a solar event. Please try again.');
+            }
+        }
+
+        async function responderSituacao(action) {
+            if (currentSituationId === null) {
+                return;
+            }
+
+            try {
+                const result = await enviarAcaoSituacao(action);
+                state.solar = result.solar;
+                state.power = result.power;
+                state.integrity = result.integrity;
+                applySolarStatus();
+                updateResources();
+                mostrarSituacao(result.situation);
+                showToast(result.message);
+            } catch (error) {
+                console.error('Unable to submit the situation response.', error);
+                showToast('Unable to submit your response. Please try again.');
+            }
+        }
+
+        document.getElementById('answerYes').addEventListener('click', function () {
+            responderSituacao('yes');
+        });
+        document.getElementById('answerNo').addEventListener('click', function () {
+            responderSituacao('no');
+        });
 
         document.querySelectorAll('[data-action]').forEach((button) => {
             button.addEventListener('click', function () {
@@ -723,6 +847,7 @@
 
         applySolarStatus();
         updateResources();
+        novaSituacao();
     </script>
 </body>
 </html>
