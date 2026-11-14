@@ -10,6 +10,12 @@ from dataclasses import dataclass
 
 @dataclass
 class MissionLoadout:
+    # Modules
+    has_solar_array: bool      # Lightweight solar panels (~800 kg)
+    has_wpa_recycler: bool     # Water Processor Assembly (~1,200 kg)
+    has_greenhouse: bool       # Veggie / Plant Habitat module (~2,500 kg)
+    has_moxie_isru: bool       # Atmospheric O2 generator (~1,000 kg)
+
     crew_size: int
     landing_site: str
     mission_duration_days: int
@@ -21,12 +27,7 @@ class MissionLoadout:
     total_o2_kg: float = 0.0
     total_co2_l: float = 0.0
 
-    # Modules
-    has_solar_array: bool = True      # Lightweight solar panels (~800 kg)
-    has_wpa_recycler: bool = True     # Water Processor Assembly (~1,200 kg)
-    has_greenhouse: bool = False      # Veggie / Plant Habitat module (~2,500 kg)
-    has_moxie_isru: bool = False      # Atmospheric O2 generator (~1,000 kg)
-    extra_radiation_shielding_g_cm2: float = 10.0  # Extra water/polyethylene mass
+    
 
     # Initial embedded supplies (kg or liters)
     initial_oxygen_kg: float = NASA_CONSTANTS["INITIAL_OXIGEN_KG"]
@@ -48,8 +49,7 @@ class MissionLoadout:
             (MODULES["moxie_isru"]["mass_kg"] if self.has_moxie_isru else 0) +
             self.initial_oxygen_kg +
             self.initial_water_l +  # Assuming water density ~1 kg/L
-            self.initial_food_kg +
-            (self.extra_radiation_shielding_g_cm2 * 10)  # Convert g/cm² to kg for a given area
+            self.initial_food_kg
         )
 
         self.total_power_kwe = (
