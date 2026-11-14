@@ -105,3 +105,22 @@ MODULES = {
         "power_kwe": 20.0
     }
 }
+
+ROCKET_ARCHITECTURES = {
+    "ares_v_ntr": {
+        "name": "Ares V + Nuclear Thermal Rocket (NTR)",
+        "surface_payload_limit_kg": 40000.0, # Full 40t surface delivery capacity
+        "imleo_mass_kg": 848700.0,           # 848.7 metric tons in Low Earth Orbit
+        "ares_v_launches_required": 9,       # 5 cargo + 4 crew launches
+        "isp_seconds": 900.0,                # High efficiency (875-950s)
+        "budget_cost_multiplier": 1.2,       # Higher R&D/tech cost, fewer launches
+    },
+    "ares_v_chemical": {
+        "name": "Ares V + Chemical / Aerocapture",
+        "surface_payload_limit_kg": 32000.0, # Reduced net cargo due to heavy propellant/aeroshell mass
+        "imleo_mass_kg": 1251800.0,          # 1,251.8 metric tons in Low Earth Orbit
+        "ares_v_launches_required": 12,      # 12 Ares V launches required
+        "isp_seconds": 450.0,                # Standard LOX/LH2 chemical efficiency
+        "budget_cost_multiplier": 1.0,       # Lower tech cost per engine, higher launch count
+    }
+}
