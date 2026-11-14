@@ -3,9 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta name="theme-color" content="#070b16">
+    <meta name="description" content="Plan a mission to Mars in the NASA Space Apps Challenge.">
+    <title>Mars Mission | NASA Space Apps Challenge</title>
 </head>
-<body>
-    Template
+<body style="margin: 0; background: #070b16;">
+    <div id="root"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script>
+        const h = React.createElement;
+
+        const colors = {
+            background: "#070b16",
+            panel: "rgba(17, 26, 45, 0.78)",
+            text: "#f4f7ff",
+            muted: "#a7b3c9",
+            orange: "#ff764a",
+            cyan: "#70e1e8",
+            border: "rgba(173, 194, 225, 0.17)"
+        };
+
+        const page = {
+            minHeight: "100vh",
+            overflow: "hidden",
+            color: colors.text,
+            fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            background:
+                "radial-gradient(ellipse at 82% 35%, rgba(32, 71, 116, 0.28), transparent 38%), " +
+                "radial-gradient(ellipse at 12% 4%, rgba(255, 118, 74, 0.11), transparent 32%), " +
+                colors.background
+        };
+
+        const container = {
+            width: "min(1120px, calc(100% - 48px))",
+            margin: "0 auto"
+        };
+
+        function App() {
+            const highlights = [
+                { number: "01", label: "CHOOSE A LANDING SITE", detail: "Jezero, Arcadia, and more" },
+                { number: "02", label: "BUILD YOUR MISSION", detail: "Resources, power, and crew" },
+                { number: "03", label: "SURVIVE ON MARS", detail: "Every choice shapes the outcome" }
+            ];
+
+            return h("main", { style: page },
+                h("header", {
+                    style: Object.assign({}, container, {
+                        minHeight: "88px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "24px",
+                        borderBottom: "1px solid " + colors.border
+                    })
+                },
+                    h("a", {
+                        href: "/",
+                        "aria-label": "NASA Space Apps Challenge - home",
+                        style: {
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                            color: colors.text,
+                            textDecoration: "none"
+                        }
+                    },
+                        h("span", {
+                            style: {
+                                width: "38px",
+                                height: "38px",
+                                display: "grid",
+                                placeItems: "center",
+                                border: "1px solid rgba(112, 225, 232, .6)",
+                                borderRadius: "50%",
+                                color: colors.cyan,
+                                fontSize: "19px"
+                            }
+                        }, "✦"),
+                        h("span", { style: { fontSize: "12px", lineHeight: 1.35, letterSpacing: "1.5px", fontWeight: 800 } },
+                            "NASA SPACE APPS",
+                            h("br"),
+                            h("span", { style: { color: colors.muted, fontSize: "10px", fontWeight: 500 } }, "MARS CHALLENGE")
+                        )
+                    ),
+                    h("div", {
+                        style: {
+                            color: colors.cyan,
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            letterSpacing: "1.8px",
+                            textAlign: "right"
+                        }
+                    }, "MISSION CONTROL", h("br"), h("span", {
+                        style: { color: colors.muted, fontWeight: 500, letterSpacing: "1px" }
+                    }, "MISSION MARS // 2045"))
+                ),
+
+                h("section", {
+                    style: Object.assign({}, container, {
+                        minHeight: "590px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "32px",
+                        paddingTop: "54px",
+                        paddingBottom: "54px",
+                        boxSizing: "border-box",
+                        flexWrap: "wrap"
+                    })
+                },
+                    h("div", { style: { flex: "1 1 440px", maxWidth: "570px", zIndex: 1 } },
+                        h("div", {
+                            style: {
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "9px",
+                                padding: "8px 12px",
+                                border: "1px solid rgba(112, 225, 232, .28)",
+                                borderRadius: "4px",
+                                background: "rgba(112, 225, 232, .06)",
+                                color: colors.cyan,
+                                fontSize: "10px",
+                                letterSpacing: "1.7px",
+                                fontWeight: 800
+                            }
+                        }, h("span", { style: { color: colors.orange } }, "●"), " MISSION SIMULATION // MARS"),
+                        h("h1", {
+                            style: {
+                                margin: "25px 0 18px",
+                                fontSize: "clamp(42px, 7vw, 76px)",
+                                lineHeight: 0.99,
+                                letterSpacing: "-3.5px",
+                                fontWeight: 850
+                            }
+                        }, "Humanity's", h("br"), h("span", { style: { color: colors.orange } }, "future"), h("br"), "is red."),
+                        h("p", {
+                            style: {
+                                maxWidth: "490px",
+                                margin: "0 0 30px",
+                                color: colors.muted,
+                                fontSize: "16px",
+                                lineHeight: 1.8
+                            }
+                        }, "A mission to Mars depends on making the right choices. Plan your colony, manage resources, and find out if your crew can survive on the Red Planet."),
+                        h("div", {
+                            style: {
+                                display: "flex",
+                                alignItems: "center",
+                                flexWrap: "wrap",
+                                gap: "16px"
+                            }
+                        },
+                            h("a", {
+                                href: "/game",
+                                style: {
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    gap: "13px",
+                                    minHeight: "54px",
+                                    padding: "0 23px",
+                                    borderRadius: "4px",
+                                    background: colors.orange,
+                                    color: "#160c0a",
+                                    fontSize: "12px",
+                                    fontWeight: 900,
+                                    letterSpacing: "1.2px",
+                                    textDecoration: "none",
+                                    boxShadow: "0 10px 35px rgba(255, 118, 74, .2)"
+                                }
+                            }, "START MISSION", h("span", { "aria-hidden": "true", style: { fontSize: "18px" } }, "→")),
+                            h("span", { style: { color: colors.muted, fontSize: "11px", letterSpacing: ".5px" } }, "GET READY FOR LIFTOFF")
+                        )
+                    ),
+                    h("div", {
+                        style: {
+                            flex: "1 1 340px",
+                            minWidth: "0",
+                            display: "flex",
+                            justifyContent: "center",
+                            position: "relative"
+                        }
+                    },
+                        h("div", {
+                            style: {
+                                position: "absolute",
+                                width: "min(420px, 90vw)",
+                                aspectRatio: "1",
+                                border: "1px solid rgba(112, 225, 232, .14)",
+                                borderRadius: "50%",
+                                boxShadow: "0 0 0 35px rgba(112, 225, 232, .025), 0 0 0 75px rgba(112, 225, 232, .02)"
+                            }
+                        }),
+                        h("img", {
+                            src: "{{ url_for('static', filename='pixellab-astronauta-do-lado-de-uma-nave-1794664482724.png') }}",
+                            alt: "Astronaut standing beside a spacecraft on the surface of Mars",
+                            style: {
+                                position: "relative",
+                                display: "block",
+                                width: "min(100%, 430px)",
+                                height: "auto",
+                                objectFit: "contain",
+                                filter: "drop-shadow(0 22px 50px rgba(0, 0, 0, .45))"
+                            }
+                        }),
+                        h("div", {
+                            style: {
+                                position: "absolute",
+                                right: "0",
+                                bottom: "8%",
+                                padding: "13px 17px",
+                                border: "1px solid " + colors.border,
+                                borderRadius: "4px",
+                                background: colors.panel,
+                                backdropFilter: "blur(10px)"
+                            }
+                        },
+                            h("div", { style: { color: colors.cyan, fontSize: "9px", letterSpacing: "1.6px", fontWeight: 800 } }, "DESTINATION"),
+                            h("div", { style: { marginTop: "5px", fontSize: "14px", fontWeight: 700 } }, "MARS · 225 MILLION KM")
+                        )
+                    )
+                ),
+
+                h("section", { style: Object.assign({}, container, { paddingBottom: "58px" }), "aria-label": "Mission stages" },
+                    h("div", {
+                        style: {
+                            display: "flex",
+                            flexWrap: "wrap",
+                            border: "1px solid " + colors.border,
+                            borderRadius: "6px",
+                            background: "rgba(15, 23, 40, .72)"
+                        }
+                    }, highlights.map(function (item, index) {
+                        return h("div", {
+                            key: item.number,
+                            style: {
+                                flex: "1 1 210px",
+                                display: "flex",
+                                gap: "15px",
+                                alignItems: "flex-start",
+                                padding: "22px",
+                                boxSizing: "border-box",
+                                borderRight: index < highlights.length - 1 ? "1px solid " + colors.border : "none"
+                            }
+                        },
+                            h("span", { style: { color: colors.orange, fontSize: "12px", fontWeight: 800 } }, item.number),
+                            h("div", null,
+                                h("div", { style: { fontSize: "10px", letterSpacing: "1.3px", fontWeight: 800 } }, item.label),
+                                h("div", { style: { marginTop: "7px", color: colors.muted, fontSize: "12px" } }, item.detail)
+                            )
+                        );
+                    }))
+                ),
+
+                h("footer", {
+                    style: Object.assign({}, container, {
+                        padding: "18px 0 25px",
+                        borderTop: "1px solid " + colors.border,
+                        color: colors.muted,
+                        fontSize: "10px",
+                        letterSpacing: ".7px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        flexWrap: "wrap",
+                        gap: "10px"
+                    })
+                },
+                    h("span", null, "NASA SPACE APPS CHALLENGE · MARS MISSION"),
+                    h("span", null, "ONE SMALL STEP TOWARD YOUR NEXT GREAT MISSION")
+                )
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById("root")).render(h(App));
+    </script>
 </body>
 </html>
