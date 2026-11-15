@@ -2,6 +2,13 @@
   Mars survival phase - front-end logic.
   Talks to POST /game/situation and renders the two dashboards.
 */
+function playButtonSound3() {
+    const sound = new Audio("/static/music/page.mp3");
+    sound.volume = 0.3;
+    sound.play().catch(function (error) {
+        console.warn("Não foi possível tocar o som do botão.", error);
+    });
+}
 (function () {
     "use strict";
 
@@ -370,6 +377,7 @@
 
         buttons.forEach(function (button) {
             button.addEventListener("click", function () {
+                playButtonSound3();
                 const isOpen = button.getAttribute("aria-expanded") === "true";
                 buttons.forEach(function (item) { item.setAttribute("aria-expanded", "false"); });
                 if (isOpen) {
