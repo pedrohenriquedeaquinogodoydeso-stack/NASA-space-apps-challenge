@@ -1,25 +1,22 @@
+##################################
+# app.py
+#
+# Main Flask application file for Mars Mission Planner & Gameplay.
+##################################
+
 import math
 import random
 
 from flask import Flask, abort, jsonify, render_template, request
 
+from src.game import MarsGameManager
 from src.constants import MARS_SITES, MODULES, NASA_CONSTANTS, ROCKET_ARCHITECTURES
 from src.mission_loadout import MissionLoadout
 
 app = Flask(__name__)
 
-SITUATION = {
-    'id': 1,
-    'prompt': 'A solar storm is approaching. Do you protect your equipment?',
-    'yes_consequence': 'Equipment protected; solar energy decreased.',
-    'no_consequence': 'Equipment integrity decreased.',
-}
-
-
-def maybe_create_situation():
-    if random.randint(1, 10) != 1:
-        return None
-    return {'id': SITUATION['id'], 'prompt': SITUATION['prompt']}
+# Global game manager instance for session handling
+mars_game_manager = MarsGameManager()
 
 
 def number_from_payload(payload, key, minimum, maximum):
@@ -87,9 +84,11 @@ def preview_loadout():
     )
     return jsonify(loadout.to_dict())
 
+
 @app.route('/c')
 def game1():
     return render_template('choosedificulty.html')
+
 
 @app.route('/d')
 def game2():
@@ -119,6 +118,8 @@ def game():
 
     site = MARS_SITES[site_id]
     rocket = ROCKET_ARCHITECTURES[rocket_id]
+    
+    # Build the MissionLoadout based on URL parameters exactly like before
     loadout = build_loadout_from_params(
         crew_size=crew_size,
         site_id=site_id,
@@ -126,21 +127,27 @@ def game():
         active_modules=active_modules,
     )
 
+    # Bind this loadout directly into the backend game manager
+    global mars_game_manager
+    mars_game_manager = MarsGameManager(loadout=loadout)
+
     daily_requirements = {
         'oxygen_kg': NASA_CONSTANTS['O2_KG_PER_PERSON_DAY'] * crew_size,
         'water_l': NASA_CONSTANTS['WATER_L_PER_PERSON_DAY'] * crew_size,
         'food_kg': NASA_CONSTANTS['FOOD_KG_PER_PERSON_DAY'] * crew_size,
         'co2_l': NASA_CONSTANTS['CO2_L_PRODUCED_PER_PERSON_DAY'] * crew_size,
     }
+    
     habitat_targets = {
         'oxygen_partial_pressure_mmhg': NASA_CONSTANTS['TARGET_PPO2_MMHG'],
         'pressure_psi': NASA_CONSTANTS['HABITAT_PRESSURE_PSI'],
         'temperature_c': NASA_CONSTANTS['TARGET_TEMP_C'],
         'humidity_pct': NASA_CONSTANTS['TARGET_HUMIDITY_PCT'],
     }
+    
+    # Fixed radiation calculation using proper operators based on your old code
     radiation_msv_day = (
-        NASA_CONSTANTS['BASE_MARS_RADIATION_MSV_DAY']
-        * (1.0 - site['natural_radiation_shielding'])
+        NASA_CONSTANTS['BASE_MARS_RADIATION_MSV_DAY'] * (1.0 - site['natural_radiation_shielding'])
     )
 
     return render_template(
@@ -150,7 +157,7 @@ def game():
         site_name=site['name'],
         temperature=site['avg_temp_c'],
         rocket=rocket,
-        loadout=loadout,
+        loadout=loadout.to_dict(),
         daily_requirements=daily_requirements,
         habitat_targets=habitat_targets,
         radiation_msv_day=radiation_msv_day,
@@ -165,36 +172,19 @@ def game_situation():
 
     action = payload.get('action')
     if action == 'next':
-        return jsonify(situation=maybe_create_situation())
+        return jsonify(mars_game_manager.state_payload())
+
     if action not in ('yes', 'no'):
         abort(400)
 
     choice_index = payload.get('choice_index')
-    if (
-        isinstance(choice_index, bool)
-        or not isinstance(choice_index, int)
-        or choice_index != SITUATION['id']
-    ):
+    if isinstance(choice_index, bool) or not isinstance(choice_index, int):
         abort(400)
 
-    solar = number_from_payload(payload, 'solar', 0, 1.5)
+    solar = number_from_payload(payload, 'solar', 0.4, 2.0)
     integrity = number_from_payload(payload, 'integrity', 0, 100)
 
-    if action == 'yes':
-        solar = max(0, solar - 0.1)
-        message = SITUATION['yes_consequence']
-    else:
-        integrity = max(0, integrity - 10)
-        message = SITUATION['no_consequence']
-
-    return jsonify(
-        solar=solar,
-        power=max(0, min(100, solar * 100)),
-        integrity=integrity,
-        message=message,
-        situation=maybe_create_situation(),
-    )
-
+    return jsonify(mars_game_manager.process_action(choice_index, action, solar, integrity))
 
 if __name__ == '__main__':
     app.run(debug=True)
