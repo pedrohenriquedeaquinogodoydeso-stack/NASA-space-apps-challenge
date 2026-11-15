@@ -4,26 +4,47 @@
 # Data catalogue for the survival phase: decision situations and science objectives.
 # Edit/extend this file with real NASA-inspired events. game.py only reads it.
 #
-# Effect keys (all optional):
+# HOW AN EVENT WORKS
+#   Every event has a "yes" and a "no" option, both built with opt(label, message, effects, risk).
+#   1. The effects of the chosen option are ALWAYS applied.
+#   2. If the option has a risk, the game then rolls once: with probability `chance` the
+#      risk's effects are applied ON TOP, as an "incident" (its message is appended and the
+#      HUD lists the changes under "Incident"). The roll is independent for every decision.
+#   3. rk(chance, message, **effects) builds the risk: rk(0.30, "A suit tears.", integrity=-5).
+#      Only one risk per option; its effects are never scaled by crew size.
+#   4. A stressed crew makes more mistakes: the real chance is
+#      min(0.95, chance * (1 + 0.5 * stress / 100)), so at stress 0 it equals `chance`.
+#   Rule of thumb: the expected cost of a risk is chance x effect.
+#
+# EFFECT KEYS (all optional, usable both in effects and in risks)
 #   oxygen_kg, water_l, food_kg  -> resource delta
 #   integrity                    -> habitat structure delta (0-100)
 #   solar                        -> solar-array efficiency multiplier delta (0.4-2.0)
-#   science                      -> science points (positive gains use the site multiplier)
+#   science                      -> science points (gains are multiplied by the site multiplier
+#                                   and reduced when crew stress is above 50)
 #   sample                       -> index of the site objective that gets +1 sample (0 or 1)
+#   power                        -> TEMPORARY change of the net power balance in kWe
+#                                   (negative = the event drains power, positive = it saves power)
+#   power_sols                   -> how many sols the power change lasts (integer, default 2).
+#                                   Only valid together with "power".
+#   stress                       -> crew stress delta (0-100). POSITIVE = MORE STRESS (bad).
+#                                   Negative values relax the crew (rest, shared meals, good news).
 #
-# Situation keys:
+# SITUATION KEYS
 #   periods          -> list of "morning"/"afternoon"/"night" (None = any)
 #   sites            -> list of site ids (None = every site)
 #   requires         -> dict of conditions, ALL must be true for the event to appear:
 #       "modules":         ["greenhouse"]          modules that must be equipped
 #       "without_modules": ["moxie_isru"]          modules that must NOT be equipped
 #       <stat>: {"min": a, "max": b}               either bound is optional; a bare number means min
-#     stats: oxygen_kg, water_l, food_kg, integrity, solar, power (net kWe),
+#     stats: oxygen_kg, water_l, food_kg, integrity, solar, power (net kWe), stress,
 #            crew, sol, science, samples
 #     (the old form  "requires": ["greenhouse"]  still works)
 #   scheduled_every  -> forced on the morning of every N-th sol
-#   nasa             -> REAL-WORLD BASIS of the event (see nasa() below). Optional, but every
-#                       event in this file has one so the UI can show "Based on a real event".
+#   urgent           -> True: as soon as its conditions hold the event jumps the queue
+#                       (the 5-decision "recently seen" memory still prevents spam)
+#   nasa             -> REAL-WORLD BASIS of the event (see nasa() below). Optional; when present the
+#                       HUD shows a "Real NASA event/data" badge with the source link.
 #
 # nasa() "kind":
 #   "event"  -> the situation really happened (or is a close retelling of something that did)
@@ -93,8 +114,8 @@ SITUATIONS = [
         "yes": opt(
             "Send the rover on the full cargo-recovery EVA",
             "All crates secured, but life support reserves took a heavy hit.",
-            {"oxygen_kg": 120, "water_l": 80, "food_kg": 250},
-            rk(0.45, "Sharp bedrock punctures a wheel skin and tears a suit on the return.", integrity=-8, oxygen_kg=-25, water_l=-15),
+            {"oxygen_kg": 120, "water_l": 80, "food_kg": 250, "stress": 4, "power": -2.0, "power_sols": 2},
+            rk(0.45, "Sharp bedrock punctures a wheel skin and tears a suit on the return.", integrity=-8, oxygen_kg=-25, water_l=-15, stress=4),
             scale_crew=True
         ),
         "no": opt(
@@ -143,13 +164,13 @@ SITUATIONS = [
         "yes": opt(
             "Keep the array deployed and keep working",
             "The crew keeps sampling under a darkening sky.",
-            {"science": 6},
-            rk(0.45, "Dust settles on the panels and output sags.", solar=-0.3)
+            {"science": 6, "stress": 2},
+            rk(0.60, "Dust settles on the panels and output sags.", solar=-0.3, stress=2)
         ),
         "no": opt(
             "Stow the array and shelter in place",
             "Array stowed; the crew waits out the front.",
-            {"oxygen_kg": -1.5, "science": -2}
+            {"oxygen_kg": -1.5, "science": -2, "stress": 1}
         ),
         "nasa": nasa(
             "event",
@@ -169,13 +190,13 @@ SITUATIONS = [
         "yes": opt(
             "Enter survival mode and stow everything non-essential",
             "The base rides out the storm on minimum power.",
-            {"science": -8, "oxygen_kg": -2}
+            {"science": -8, "oxygen_kg": -2, "stress": 3, "power": 1.5, "power_sols": 3}
         ),
         "no": opt(
             "Keep full operations and bet on the batteries",
             "The crew keeps the lab running while the sky goes dark.",
-            {"science": 10},
-            rk(0.60, "Batteries drain, heaters brown out and the habitat's thermal margin collapses.", integrity=-8, solar=-0.3)
+            {"science": 10, "stress": 5, "power": -3.0, "power_sols": 3},
+            rk(0.60, "Batteries drain, heaters brown out and the habitat's thermal margin collapses.", integrity=-8, solar=-0.3, stress=6)
         ),
         "nasa": nasa(
             "event",
@@ -195,8 +216,8 @@ SITUATIONS = [
         "yes": opt(
             "Run the EVA",
             "Samples collected and sealed.",
-            {"oxygen_kg": -6, "sample": 0, "science": 12},
-            rk(0.20, "A suit joint tears on the return.", integrity=-5, oxygen_kg=-4)
+            {"oxygen_kg": -6, "sample": 0, "science": 12, "stress": 3, "power": -1.0, "power_sols": 1},
+            rk(0.20, "A suit joint tears on the return.", integrity=-5, oxygen_kg=-4, stress=4)
         ),
         "no": opt(
             "Stay inside and analyse earlier material",
@@ -220,13 +241,13 @@ SITUATIONS = [
         "yes": opt(
             "Stand the suit down and swap its fan/pump/separator",
             "The suit is rebuilt and tested; the EVA slips a day.",
-            {"science": -3, "water_l": -4}
+            {"science": -3, "water_l": -4, "stress": 1}
         ),
         "no": opt(
             "Assume it was the drink bag and go anyway",
             "The EVA goes ahead on schedule.",
-            {"science": 6},
-            rk(0.40, "Water floods the helmet mid-EVA. The walk is aborted and the crew rushes back through the airlock.", oxygen_kg=-8, science=-8, integrity=-3)
+            {"science": 6, "stress": 3},
+            rk(0.40, "Water floods the helmet mid-EVA. The walk is aborted and the crew rushes back through the airlock.", oxygen_kg=-8, science=-8, integrity=-3, stress=8)
         ),
         "nasa": nasa(
             "event",
@@ -246,14 +267,14 @@ SITUATIONS = [
         "yes": opt(
             "Seal the cracks and re-check the pressure",
             "Seal replaced; base is tight, but crew is exhausted.",
-            {"integrity": 4, "oxygen_kg": -8, "water_l": -10},
-            rk(0.25, "The leak returns after the next pressure cycle.", oxygen_kg=-6, integrity=-2)
+            {"integrity": 4, "oxygen_kg": -8, "water_l": -10, "stress": 2},
+            rk(0.25, "The leak returns after the next pressure cycle.", oxygen_kg=-6, integrity=-2, stress=3)
         ),
         "no": opt(
             "Close the hatch and isolate the compartment",
             "The compartment is sealed off and the leak contained, for now.",
-            {"oxygen_kg": -2, "science": -3},
-            rk(0.45, "Fatigue cracks keep growing under repeated pressure cycles.", integrity=-5)
+            {"oxygen_kg": -2, "science": -3, "stress": 3},
+            rk(0.45, "Fatigue cracks keep growing under repeated pressure cycles.", integrity=-5, stress=4)
         ),
         "nasa": nasa(
             "event",
@@ -273,14 +294,14 @@ SITUATIONS = [
         "yes": opt(
             "Cut away dead tissue, sanitize and boost airflow",
             "Tray cleaned and replanted.",
-            {"food_kg": -4, "water_l": -10},
+            {"food_kg": -4, "water_l": -10, "stress": -1, "power": -1.0, "power_sols": 2},
             rk(0.25, "The strong airflow dries out the surviving plants, which need extra water.", water_l=-8)
         ),
         "no": opt(
             "Harvest early and keep growing",
             "A quick harvest saves some crop.",
-            {"food_kg": 2},
-            rk(0.60, "The blight reaches the other trays.", food_kg=-14)
+            {"food_kg": 2, "stress": 2},
+            rk(0.60, "The blight reaches the other trays.", food_kg=-14, stress=3)
         ),
         "nasa": nasa(
             "event",
@@ -300,13 +321,13 @@ SITUATIONS = [
         "yes": opt(
             "Follow the conjunction plan: low-risk work and passive monitoring only",
             "A quiet fortnight. Weather and radiation logs fill up and nothing breaks.",
-            {"science": 3}
+            {"science": 3, "stress": 3}
         ),
         "no": opt(
             "Run the full schedule on your own authority",
             "The crew pushes on without any ground backup.",
-            {"science": 9},
-            rk(0.40, "An anomaly hits with no ground support, and the rushed fix burns consumables.", oxygen_kg=-6, integrity=-4)
+            {"science": 9, "stress": 6},
+            rk(0.40, "An anomaly hits with no ground support, and the rushed fix burns consumables.", oxygen_kg=-6, integrity=-4, stress=5)
         ),
         "nasa": nasa(
             "event",
@@ -326,13 +347,13 @@ SITUATIONS = [
         "yes": opt(
             "Ration strictly",
             "Showers and lab cooling are cut.",
-            {"water_l": 25, "science": -5}
+            {"water_l": 25, "science": -5, "stress": 5, "power": 1.5, "power_sols": 3}
         ),
         "no": opt(
             "Keep the normal routine",
             "Life goes on as usual.",
             {},
-            rk(0.50, "A pump runs dry and has to be replaced.", water_l=-30, integrity=-3)
+            rk(0.50, "A pump runs dry and has to be replaced.", water_l=-30, integrity=-3, stress=3)
         ),
         "nasa": nasa(
             "data",
@@ -356,13 +377,13 @@ SITUATIONS = [
         "yes": opt(
             "EVA to clean the panels",
             "Panels wiped; output recovers.",
-            {"solar": 0.25, "oxygen_kg": -5},
+            {"solar": 0.25, "oxygen_kg": -5, "stress": 1},
             rk(0.15, "A cleaning brush catches a panel edge.", integrity=-3)
         ),
         "no": opt(
             "Leave them and run science instead",
             "The crew spends the time in the lab. No gust comes to help.",
-            {"solar": -0.08, "science": 2}
+            {"solar": -0.08, "science": 5}
         ),
         "nasa": nasa(
             "event",
@@ -382,13 +403,13 @@ SITUATIONS = [
         "yes": opt(
             "Throttle recovery to a safe level and flush the system",
             "Scale flushed; recovery steady at a lower, safer rate.",
-            {"water_l": -15}
+            {"water_l": -15, "stress": 1, "power": -1.0, "power_sols": 1}
         ),
         "no": opt(
             "Keep pushing for maximum recovery",
             "The recycler keeps limping along.",
             {},
-            rk(0.50, "The distillation unit clogs with scale and contaminated water has to be dumped.", water_l=-40)
+            rk(0.50, "The distillation unit clogs with scale and contaminated water has to be dumped.", water_l=-40, stress=4)
         ),
         "nasa": nasa(
             "event",
@@ -408,14 +429,14 @@ SITUATIONS = [
         "yes": opt(
             "Clean the intake on an EVA",
             "Intake cleared; oxygen output restored.",
-            {"oxygen_kg": 10},
-            rk(0.15, "The EVA takes longer than planned.", integrity=-3, oxygen_kg=-4)
+            {"oxygen_kg": 10, "stress": 1},
+            rk(0.15, "The EVA takes longer than planned.", integrity=-3, oxygen_kg=-4, stress=2)
         ),
         "no": opt(
             "Skip it and ration the oxygen",
             "Production stays low.",
-            {},
-            rk(0.50, "The pump overheats and shuts down.", oxygen_kg=-12)
+            {"stress": 1},
+            rk(0.50, "The pump overheats and shuts down.", oxygen_kg=-12, stress=3)
         ),
         "nasa": nasa(
             "analog",
@@ -434,8 +455,8 @@ SITUATIONS = [
         "yes": opt(
             "Drill the target",
             "Core extracted and logged.",
-            {"sample": 1, "science": 10, "water_l": -6},
-            rk(0.25, "The brittle rock crumbles around the bit. Only a fragment is salvaged and the rig mount takes a beating.", integrity=-3, science=-6)
+            {"sample": 1, "science": 10, "water_l": -6, "stress": 2, "power": -1.5, "power_sols": 1},
+            rk(0.25, "The brittle rock crumbles around the bit. Only a fragment is salvaged and the rig mount takes a beating.", integrity=-3, science=-6, stress=3)
         ),
         "no": opt(
             "Postpone the drilling",
@@ -459,13 +480,13 @@ SITUATIONS = [
         "yes": opt(
             "Follow the new plan",
             "Earth's target is sampled.",
-            {"sample": 0, "science": 8, "food_kg": -2},
-            rk(0.20, "The rushed EVA wastes breathing gas.", oxygen_kg=-5)
+            {"sample": 0, "science": 8, "food_kg": -2, "stress": 3},
+            rk(0.20, "The rushed EVA wastes breathing gas.", oxygen_kg=-5, stress=2)
         ),
         "no": opt(
             "Stick to the local plan",
             "Earth is not happy with the delay.",
-            {"science": -3}
+            {"science": -3, "stress": 2}
         ),
         "nasa": nasa(
             "data",
@@ -485,13 +506,13 @@ SITUATIONS = [
         "yes": opt(
             "Hold a crew meeting",
             "The air is cleared, but work stops for a while.",
-            {"science": -3, "food_kg": -2}
+            {"science": -3, "food_kg": -2, "stress": -6}
         ),
         "no": opt(
             "Ignore it and keep the schedule",
             "Everyone keeps working.",
-            {"science": 2},
-            rk(0.50, "A shouting match ends with a damaged console.", integrity=-5, science=-6)
+            {"science": 2, "stress": 6},
+            rk(0.50, "A shouting match ends with a damaged console.", integrity=-5, science=-6, stress=6)
         ),
         "nasa": nasa(
             "data",
@@ -511,13 +532,13 @@ SITUATIONS = [
         "yes": opt(
             "Declare a rest sol with a shared meal and exercise",
             "Morale recovers, but the schedule slips.",
-            {"science": -3, "food_kg": -3}
+            {"science": -3, "food_kg": -3, "stress": -8}
         ),
         "no": opt(
             "Push on to protect the schedule",
             "The crew grinds through it.",
-            {"science": 3},
-            rk(0.50, "Tempers fray and a tired mistake damages a console.", integrity=-4, science=-6)
+            {"science": 3, "stress": 6},
+            rk(0.50, "Tempers fray and a tired mistake damages a console.", integrity=-4, science=-6, stress=4)
         ),
         "nasa": nasa(
             "data",
@@ -561,13 +582,13 @@ SITUATIONS = [
         "yes": opt(
             "Reroute power and shut non-essential systems",
             "Heat holds; non-essential loads and some experiments are shut down.",
-            {"integrity": 3, "science": -4}
+            {"integrity": 3, "science": -4, "stress": 2, "power": 2.0, "power_sols": 2}
         ),
         "no": opt(
             "Wait and see",
             "The crew hopes the pump recovers.",
-            {},
-            rk(0.55, "Pipes freeze and crack.", integrity=-12)
+            {"stress": 3},
+            rk(0.55, "Pipes freeze and crack, and the heaters run flat out.", integrity=-12, stress=4, power=-3.0, power_sols=2)
         ),
         "nasa": nasa(
             "event",
@@ -586,13 +607,13 @@ SITUATIONS = [
         "yes": opt(
             "Move everyone to the storm shelter",
             "Crew shelters; lab work is paused.",
-            {"science": -3, "food_kg": -2}
+            {"science": -3, "food_kg": -2, "stress": 3}
         ),
         "no": opt(
             "Keep working in the lab",
             "Night shift continues.",
-            {"science": 6},
-            rk(0.35, "Energetic particles corrupt instruments and control electronics.", integrity=-8)
+            {"science": 6, "stress": 2},
+            rk(0.35, "Energetic particles corrupt instruments and control electronics.", integrity=-8, stress=4)
         ),
         "nasa": nasa(
             "event",
@@ -612,13 +633,13 @@ SITUATIONS = [
         "yes": opt(
             "Wake up and patch it now",
             "A pinhole is found and sealed with tape and epoxy.",
-            {"oxygen_kg": -4, "integrity": 4}
+            {"oxygen_kg": -4, "integrity": 4, "stress": 4}
         ),
         "no": opt(
             "Let the crew sleep until morning",
             "The crew tries to sleep.",
-            {},
-            rk(0.50, "The leak grows overnight.", oxygen_kg=-20, integrity=-6)
+            {"stress": 2},
+            rk(0.50, "The leak grows overnight.", oxygen_kg=-20, integrity=-6, stress=6)
         ),
         "nasa": nasa(
             "event",
@@ -637,13 +658,13 @@ SITUATIONS = [
         "yes": opt(
             "Improvise an adapter from a suit hose, tape and cardboard",
             "The ugly adapter works and CO2 starts falling.",
-            {"oxygen_kg": -3, "science": -2}
+            {"oxygen_kg": -3, "science": -2, "stress": 3, "power": -1.5, "power_sols": 2}
         ),
         "no": opt(
             "Wait for the morning shift",
             "The crew puts up with headaches.",
-            {},
-            rk(0.60, "CO2 builds up overnight and the crew has to flush the cabin with fresh oxygen.", oxygen_kg=-15)
+            {"stress": 4},
+            rk(0.60, "CO2 builds up overnight and the crew has to flush the cabin with fresh oxygen.", oxygen_kg=-15, stress=6)
         ),
         "nasa": nasa(
             "event",
@@ -663,12 +684,12 @@ SITUATIONS = [
         "yes": opt(
             "Run the full analysis",
             "Data stored and sent to Earth.",
-            {"science": 9, "water_l": -3}
+            {"science": 9, "water_l": -3, "stress": 1, "power": -2.0, "power_sols": 1}
         ),
         "no": opt(
             "Archive the data and rest",
             "The crew sleeps; analysis waits.",
-            {"science": 2}
+            {"science": 2, "stress": -2}
         ),
         "nasa": nasa(
             "data",
@@ -692,13 +713,13 @@ SITUATIONS = [
         "yes": opt(
             "Do a full overnight inspection",
             "Weak points reinforced.",
-            {"integrity": 8, "oxygen_kg": -4, "water_l": -6}
+            {"integrity": 8, "oxygen_kg": -4, "water_l": -6, "stress": 2, "power": -1.0, "power_sols": 1}
         ),
         "no": opt(
             "Postpone it",
             "The crew sleeps; the habitat keeps creaking.",
-            {},
-            rk(0.50, "A weld fails during the night.", integrity=-10)
+            {"stress": 3},
+            rk(0.50, "A weld fails during the night.", integrity=-10, stress=5)
         ),
         "nasa": nasa(
             "event",
@@ -706,6 +727,53 @@ SITUATIONS = [
             "Russian specialists point to fatigue from micro-vibrations. The root cause was still unresolved years after the first leak.",
             "NASA OIG report IG-24-020 (Sept 2024); NASA Aerospace Safety Advisory Panel",
             "https://spacepolicyonline.com/?p=75872",
+        ),
+    },
+    {
+        "id": "crew_fatigue",
+        "tag": "CREW",
+        "periods": ["night"],
+        "requires": {"sol": {"min": 100}},
+        "title": "Crew fatigue",
+        "description": "The crew has been working long days for months. Sleep is short and restless, and the schedule is slipping.",
+        "yes": opt(
+            "Declare a rest sol with a shared meal and exercise",
+            "Morale recovers, but the schedule slips.",
+            {"science": -5, "food_kg": -3, "water_l": -4, "stress": -8},
+            scale_crew=True
+        ),
+        "no": opt(
+            "Continue with the current schedule",
+            "The crew pushes through the fatigue.",
+            {"science": -2, "food_kg": -2, "water_l": -2, "stress": 5}
+        )
+    },
+    {
+        # Urgent: appears at the next decision as soon as stress reaches 70.
+        # At stress 100 the mission ends ("Crew breakdown"), so this is the player's safety valve.
+        "id": "stress_crisis",
+        "tag": "CREW",
+        "urgent": True,
+        "requires": {"stress": {"min": 70}},
+        "title": "Crew close to breaking point",
+        "description": "Arguments, silence and sleepless nights: the crew is close to breaking point. One more bad decision could end the mission.",
+        "yes": opt(
+            "Stand down: rest, talk and eat together",
+            "The crew gets its first real rest in weeks.",
+            {"science": -8, "food_kg": -2, "stress": -15}
+        ),
+        "no": opt(
+            "Push on and ask for one more effort",
+            "The crew follows orders, barely.",
+            {"science": 4, "stress": 5},
+            rk(0.50, "An exhausted crew member makes a serious error at the console.", integrity=-8, science=-6, stress=8)
+        ),
+        "nasa": nasa(
+            "data",
+            "Even the small, hand-picked four-person CHAPEA-1 crew (378 days, 2023-2024) reported 'crabby days' and boredom. "
+            "NASA's Behavioral Health and Performance team studies these effects, along with exercise, nutrition and medical support.",
+            "AFP/NASA, 'One year on Mars: inside NASA's ultra-realistic isolation study', July 2024",
+            "https://phys.org/news/2024-07-year-mars-nasa-ultra-realistic.html",
         ),
     },
 
@@ -722,8 +790,8 @@ SITUATIONS = [
         "yes": opt(
             "Make the long traverse",
             "Layered delta sediments collected.",
-            {"sample": 1, "science": 18, "oxygen_kg": -9},
-            rk(0.30, "Rough terrain damages equipment.", integrity=-5)
+            {"sample": 1, "science": 18, "oxygen_kg": -9, "stress": 2, "power": -1.0, "power_sols": 1},
+            rk(0.30, "Rough terrain damages equipment.", integrity=-5, stress=3)
         ),
         "no": opt(
             "Skip the traverse",
@@ -746,9 +814,9 @@ SITUATIONS = [
         "description": "A reddish, vein-filled mudstone beside an ancient river valley shows dark 'poppy seed' specks and larger 'leopard spots'. On Earth, features like these often come from microbial chemistry, but non-biological causes cannot be ruled out.",
         "yes": opt(
             "Core it and sample the vein system",
-            "A promising core is sealed for the record.",
-            {"sample": 0, "science": 20, "oxygen_kg": -8},
-            rk(0.30, "The slope is steeper than the orbital map suggested.", integrity=-5)
+            "A promising core is sealed for the record, and morale lifts.",
+            {"sample": 0, "science": 20, "oxygen_kg": -8, "stress": -3},
+            rk(0.30, "The slope is steeper than the orbital map suggested.", integrity=-5, stress=4)
         ),
         "no": opt(
             "Image it and move on",
@@ -774,8 +842,8 @@ SITUATIONS = [
         "yes": opt(
             "Drill an ice core",
             "Ice core extracted; some water recovered.",
-            {"sample": 0, "science": 14, "water_l": 40},
-            rk(0.25, "The rig seizes in the ice.", integrity=-4, oxygen_kg=-4)
+            {"sample": 0, "science": 14, "water_l": 40, "stress": 2, "power": -2.0, "power_sols": 1},
+            rk(0.25, "The rig seizes in the ice.", integrity=-4, oxygen_kg=-4, stress=3)
         ),
         "no": opt(
             "Only run a surface radar survey",
@@ -798,15 +866,15 @@ SITUATIONS = [
         "title": "Abrasive slope winds",
         "description": "Afternoon slope winds are lifting sand and dust and sandblasting seals and joints on the habitat. Curiosity sees dust lifting peak around solar noon.",
         "yes": opt(
-            "EVA to wipe and re-seal the joints",
-            "Seals refreshed.",
-            {"integrity": 5, "oxygen_kg": -4}
-        ),
-        "no": opt(
             "Ignore it and keep drilling clay",
             "Drilling continues.",
-            {"science": 4},
-            rk(0.50, "Grit gets into the joints.", integrity=-8)
+            {"science": 4, "stress": 2},
+            rk(0.50, "Grit gets into the joints.", integrity=-8, stress=3)
+        ),
+        "no": opt(
+            "EVA to wipe and re-seal the joints",
+            "Seals refreshed.",
+            {"integrity": 5, "oxygen_kg": -4, "stress": 2}
         ),
         "nasa": nasa(
             "data",
@@ -826,8 +894,8 @@ SITUATIONS = [
         "yes": opt(
             "Sample the strata anyway",
             "A rare strata sample is secured.",
-            {"sample": 0, "science": 20, "oxygen_kg": -10},
-            rk(0.40, "Falling rock hits the rover and the airlock.", integrity=-10)
+            {"sample": 0, "science": 20, "oxygen_kg": -10, "stress": 4},
+            rk(0.40, "Falling rock hits the rover and the airlock.", integrity=-10, stress=6)
         ),
         "no": opt(
             "Photograph it from a safe distance",
@@ -852,8 +920,8 @@ SITUATIONS = [
         "yes": opt(
             "Scan it and bake a sample to test the water yield",
             "The scan confirms hydrated minerals and a little water is recovered.",
-            {"sample": 1, "science": 10, "water_l": 10},
-            rk(0.20, "Rough ground on the way back damages equipment.", integrity=-3)
+            {"sample": 1, "science": 10, "water_l": 10, "stress": 1, "power": -2.5, "power_sols": 1},
+            rk(0.20, "Rough ground on the way back damages equipment.", integrity=-3, stress=2)
         ),
         "no": opt(
             "Rely on the orbital spectra",
