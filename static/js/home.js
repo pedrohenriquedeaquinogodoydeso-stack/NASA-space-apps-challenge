@@ -218,6 +218,14 @@ function Home() {
                     );
                 })
             ),
+            h("div", { style: { fontSize: "20px",marginTop: "50px", background: colors.panel, flex: "1 1 240px", padding: "22px", boxSizing: "border-box", border: "1px solid " + colors.border, borderRadius: "6px", } }, 
+                h("h1", { style: { fontWeight: 800, letterSpacing: "1.5px", color: colors.orange, fontSize: "20px"} }, "Everyone knows that planning missions is decisive, but it can involve many difficult choices in order to reduce damage and needs. Analyze the important variables."),
+            ), 
+            h("div", { style: { marginTop: "36px", background: colors.panel, flex: "1 1 240px", padding: "22px", boxSizing: "border-box", border: "1px solid " + colors.border, borderRadius: "6px", } }, 
+                
+                h("h1", { style: { fontWeight: 800, letterSpacing: "1.5px", fontSize: "15px"} }, "Oxygen: It is essential for the Cellular respiration and the maintenance of life, being used in aerobic respiration of animals, plants, and most living organisms. On a space mission, it becomes one of the first points that must be observed. Average per crew member:"),
+            ),
+
             h("div", { style: { marginTop: "36px" } },
                 h("a", {
                     href: "/planning",
