@@ -3,1048 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0b1220">
-    <title>Mars Colony | Gameplay</title>
-    <!--<audio src="/static/music/space.mp3" autoplay loop></audio> -->
-    <audio src="/static/music/space.mp3" autoplay loop
-       onloadedmetadata="this.volume = 0.1"></audio>
+    <meta name="theme-color" content="#070b16">
+    <title>Surviving Mars | NASA Space Apps Challenge</title>
     <style>
         :root {
-            --bg: #0d1325;
-            --bg-deep: #070b16;
-            --panel: #101b2b;
-            --panel-alt: #1a2b3d;
-            --panel-dark: #0d1728;
-            --line: rgba(175, 201, 225, 0.2);
-            --line-strong: rgba(175, 201, 225, 0.4);
-            --sky: #7cc9ff;
-            --sand: #d49363;
-            --orange: #ff824d;
-            --cyan: #7de1ec;
-            --cyan-deep: #58b9d8;
-            --green: #a9d179;
-            --gold: #f0d77f;
-            --cream: #eaf0ff;
-            --muted: #a8b7cd;
-            --shadow: rgba(0, 0, 0, 0.38);
+            --bg: #070b16; --panel: rgba(17, 26, 45, .78); --text: #f4f7ff; --muted: #a7b3c9;
+            --orange: #ff764a; --cyan: #70e1e8; --green: #56e39f; --amber: #ffb05e; --red: #ff6b6b;
+            --border: rgba(173, 194, 225, .17);
         }
-
         * { box-sizing: border-box; }
-
-        html, body {
-            margin: 0;
-            min-height: 100%;
-            background: radial-gradient(circle at 50% 20%, #17263d 0%, #0d1325 35%, #070b16 100%);
-            color: var(--cream);
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        }
-
         body {
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-            padding: 26px;
-        }
-
-        .game-page {
-            width: min(100%, 880px);
-            min-height: 620px;
-            background: linear-gradient(180deg, rgba(12, 17, 29, 0.98), rgba(12, 19, 30, 0.96));
-            border: 3px solid rgba(178, 200, 225, 0.2);
-            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45), inset 0 0 0 2px rgba(255, 255, 255, 0.04);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .game-page::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(transparent 0%, rgba(255, 255, 255, 0.02) 100%);
-            pointer-events: none;
-        }
-
-        .hud-row {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            padding: 16px 14px 12px;
-            border-bottom: 2px solid var(--line);
-            gap: 12px;
-        }
-
-        .hud-chip {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            min-height: 54px;
-            border: 2px solid var(--line-strong);
-            background: rgba(23, 35, 51, 0.88);
-            color: var(--cream);
-            text-transform: uppercase;
-            font-weight: 800;
-            letter-spacing: 0.14em;
-            font-size: 11px;
-            padding: 10px 14px;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
-            position: relative;
-        }
-
-        .hud-chip .mini-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            font-size: 10px;
-            margin-right: 8px;
-            color: #0d1325;
-            background: linear-gradient(180deg, var(--cyan), #7db8e5);
-            box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15);
-        }
-
-        .hud-chip.right {
-            justify-content: flex-end;
-        }
-
-        .title-block {
-            text-align: center;
-            font-size: 11px;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            color: var(--orange);
-            font-weight: 800;
-        }
-
-        .title-block strong {
-            display: block;
-            font-size: 16px;
-            letter-spacing: 0.08em;
-            margin-top: 4px;
-            color: var(--cream);
-        }
-
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 1.3fr 1fr;
-            gap: 16px;
-            padding: 18px 14px 12px;
-            align-items: start;
-        }
-
-        .side-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            min-height: 370px;
-        }
-
-        .panel-box {
-            background: rgba(15, 25, 37, 0.9);
-            border: 2px solid var(--line-strong);
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
-            padding: 14px 12px 12px;
-        }
-
-        .panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-
-        .panel-header .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--cyan);
-            box-shadow: 0 0 10px rgba(125, 225, 236, 0.9);
-        }
-
-        .panel-label {
-            font-size: 10px;
-            letter-spacing: 0.16em;
-            color: var(--muted);
-            text-transform: uppercase;
-            font-weight: 800;
-        }
-
-        .panel-value {
-            font-size: 14px;
-            font-weight: 800;
-            color: var(--cream);
-            text-align: right;
-        }
-
-        .solar-scene {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding-top: 8px;
-            gap: 10px;
-            min-height: 150px;
-            border: 2px solid rgba(125, 225, 236, 0.5);
-            background:
-                linear-gradient(180deg, rgba(20, 30, 42, 0.4), rgba(15, 26, 34, 0.7)),
-                repeating-linear-gradient(
-                    90deg,
-                    rgba(255,255,255,0.03) 0 2px,
-                    transparent 2px 10px
-                );
-        }
-
-        .solar-array {
-            position: relative;
-            width: 160px;
-            height: 70px;
-            background: rgba(12, 19, 29, 0.9);
-            border: 2px solid rgba(178, 200, 225, 0.25);
-            overflow: hidden;
-        }
-
-        .solar-array::before,
-        .solar-array::after {
-            content: "";
-            position: absolute;
-            inset: 12px 8px 12px 8px;
-            background: repeating-linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0.08) 0 8px,
-                rgba(0,0,0,0) 8px 16px
-            );
-            clip-path: polygon(0 100%, 0 0, 100% 0, 100% 100%);
-        }
-
-        .solar-array::after {
-            inset: 10px 20px 12px 20px;
-            background: linear-gradient(180deg, rgba(122, 183, 224, 0.5), rgba(255, 130, 77, 0.5));
-            clip-path: polygon(0 100%, 0 0, 100% 0, 100% 100%);
-        }
-
-        .solar-array .panel-line {
-            position: absolute;
-            left: 50%;
-            top: 0;
-            width: 2px;
-            height: 100%;
-            background: rgba(255,255,255,0.18);
-            transform: translateX(-50%);
-        }
-
-        .panel-text {
-            font-size: 10px;
-            letter-spacing: 0.18em;
-            color: var(--muted);
-            text-transform: uppercase;
-            font-weight: 800;
-        }
-
-        .main-hero {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: start;
-            padding-top: 8px;
-            gap: 12px;
-        }
-
-        .hero-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            padding: 8px 10px 4px;
-            font-size: 10px;
-            letter-spacing: 0.2em;
-            color: var(--orange);
-            text-transform: uppercase;
-            font-weight: 800;
-        }
-
-        .hero-status::before,
-        .hero-status::after {
-            content: "";
-            flex: 1;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, rgba(255,130,77,0.8), transparent);
-        }
-
-        .astronaut-stage {
-            position: relative;
-            display: grid;
-            place-items: center;
-            isolation: isolate;
-            width: min(100%, 260px);
-            height: 250px;
-            overflow: hidden;
-            border: 1px solid rgba(125, 225, 236, 0.36);
-            background:
-                radial-gradient(ellipse at 50% 108%, rgba(255, 130, 77, 0.2), transparent 42%),
-                radial-gradient(circle at 50% 42%, rgba(32, 57, 79, 0.72), rgba(8, 15, 28, 0.96) 74%);
-            box-shadow: inset 0 0 36px rgba(64, 130, 166, 0.12), 0 12px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .astronaut-stage::before {
-            content: "";
-            position: absolute;
-            z-index: -1;
-            left: 50%;
-            bottom: -62px;
-            width: 260px;
-            height: 150px;
-            border: 1px solid rgba(255, 130, 77, 0.36);
-            border-radius: 50%;
-            box-shadow: 0 -7px 28px rgba(255, 130, 77, 0.1);
-            transform: translateX(-50%) rotate(-9deg);
-        }
-
-        .astronaut-stage::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            opacity: 0.7;
-            background-image:
-                radial-gradient(circle at 17% 23%, #d7efff 0 1px, transparent 1.5px),
-                radial-gradient(circle at 78% 18%, #d7efff 0 1px, transparent 1.5px),
-                radial-gradient(circle at 84% 47%, #d7efff 0 1px, transparent 1.5px),
-                radial-gradient(circle at 23% 62%, #d7efff 0 1px, transparent 1.5px);
-        }
-
-        .stage-label {
-            position: absolute;
-            z-index: 3;
-            top: 13px;
-            left: 14px;
-            color: var(--muted);
-            font-size: 8px;
-            font-weight: 800;
-            letter-spacing: 0.16em;
-        }
-
-        .stage-label strong {
-            margin-left: 5px;
-            color: var(--cyan);
-        }
-
-        .astronaut-figure {
-            position: relative;
-            z-index: 1;
-            width: 164px;
-            height: 205px;
-            transform: translateY(12px);
-            filter: drop-shadow(0 14px 12px rgba(0, 0, 0, 0.32));
-            animation: astronaut-float 4s ease-in-out infinite;
-        }
-
-        .astronaut-backpack {
-            position: absolute;
-            z-index: 1;
-            top: 87px;
-            left: 23px;
-            width: 34px;
-            height: 70px;
-            border: 3px solid #53677d;
-            border-radius: 11px 7px 8px 11px;
-            background: linear-gradient(90deg, #71859c, #c0cede 46%, #8298b0);
-            box-shadow: inset 5px 0 rgba(255, 255, 255, 0.16), 5px 3px 0 rgba(12, 21, 33, 0.7);
-        }
-
-        .astronaut-backpack::before {
-            content: "";
-            position: absolute;
-            top: 12px;
-            right: -5px;
-            width: 5px;
-            height: 39px;
-            border-radius: 0 4px 4px 0;
-            background: var(--orange);
-            box-shadow: 0 0 9px rgba(255, 130, 77, 0.6);
-        }
-
-        .astronaut-ear {
-            position: absolute;
-            z-index: 3;
-            top: 39px;
-            width: 14px;
-            height: 28px;
-            border: 3px solid #6f839a;
-            border-radius: 6px;
-            background: linear-gradient(90deg, #9fb3ca, #e0e8f1);
-        }
-
-        .astronaut-ear.left { left: 34px; }
-        .astronaut-ear.right { right: 34px; }
-
-        .astronaut-ear.right::after {
-            content: "";
-            position: absolute;
-            top: 7px;
-            right: -4px;
-            width: 4px;
-            height: 9px;
-            background: var(--orange);
-        }
-
-        .astronaut-helmet {
-            position: absolute;
-            z-index: 4;
-            top: 5px;
-            left: 39px;
-            width: 86px;
-            height: 83px;
-            padding: 8px;
-            border: 4px solid #9aacc1;
-            border-radius: 48% 48% 42% 42%;
-            background: linear-gradient(145deg, #f1f5fa 4%, #bbc9db 45%, #71869e 100%);
-            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.56), 0 0 20px rgba(125, 225, 236, 0.2);
-        }
-
-        .astronaut-visor {
-            position: relative;
-            display: block;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            border: 2px solid rgba(125, 225, 236, 0.72);
-            border-radius: 48% 48% 43% 43%;
-            background:
-                linear-gradient(135deg, transparent 35%, rgba(125, 225, 236, 0.3) 36%, transparent 52%),
-                linear-gradient(160deg, #354f69, #111b2b 68%, #243b53);
-            box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.65), 0 0 10px rgba(125, 225, 236, 0.22);
-        }
-
-        .astronaut-visor::before {
-            content: "";
-            position: absolute;
-            top: 7px;
-            left: 11px;
-            width: 24px;
-            height: 5px;
-            border-radius: 50%;
-            background: rgba(220, 247, 255, 0.7);
-            transform: rotate(-32deg);
-        }
-
-        .astronaut-neck {
-            position: absolute;
-            z-index: 2;
-            top: 76px;
-            left: 67px;
-            width: 30px;
-            height: 19px;
-            border: 3px solid #6b7e95;
-            border-radius: 6px;
-            background: linear-gradient(90deg, #71869d, #d4dfeb, #71869d);
-        }
-
-        .astronaut-arm {
-            position: absolute;
-            z-index: 2;
-            top: 96px;
-            width: 29px;
-            height: 58px;
-            border: 3px solid #879bb2;
-            border-radius: 15px;
-            background: linear-gradient(90deg, #9eafc3, #e3eaf2 48%, #9aadc2);
-        }
-
-        .astronaut-arm.left {
-            left: 19px;
-            transform: rotate(12deg);
-        }
-
-        .astronaut-arm.right {
-            right: 19px;
-            transform: rotate(-12deg);
-        }
-
-        .astronaut-glove {
-            position: absolute;
-            bottom: -9px;
-            left: 1px;
-            width: 21px;
-            height: 19px;
-            border: 3px solid #71859d;
-            border-radius: 8px 8px 10px 10px;
-            background: linear-gradient(180deg, #dce5ef, #8ea2b9);
-        }
-
-        .astronaut-torso {
-            position: absolute;
-            z-index: 3;
-            top: 84px;
-            left: 43px;
-            width: 78px;
-            height: 76px;
-            border: 4px solid #71859c;
-            border-radius: 24px 24px 17px 17px;
-            background: linear-gradient(105deg, #93a6bc, #e3eaf2 44%, #a4b5c8);
-            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.42), 0 4px 0 #53677d;
-        }
-
-        .astronaut-console {
-            position: absolute;
-            top: 14px;
-            left: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            width: 34px;
-            height: 25px;
-            border: 2px solid #637990;
-            border-radius: 5px;
-            background: #23364a;
-        }
-
-        .astronaut-console span {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: var(--cyan);
-            box-shadow: 0 0 5px rgba(125, 225, 236, 0.85);
-        }
-
-        .astronaut-console span:last-child {
-            background: var(--orange);
-            box-shadow: 0 0 5px rgba(255, 130, 77, 0.8);
-        }
-
-        .astronaut-belt {
-            position: absolute;
-            right: 7px;
-            bottom: 9px;
-            left: 7px;
-            height: 7px;
-            border-radius: 4px;
-            background: #667d95;
-            box-shadow: 0 2px 0 rgba(37, 52, 70, 0.5);
-        }
-
-        .astronaut-leg {
-            position: absolute;
-            z-index: 2;
-            top: 148px;
-            width: 32px;
-            height: 48px;
-            border: 3px solid #8296ad;
-            border-radius: 8px 8px 11px 11px;
-            background: linear-gradient(90deg, #96a9be, #d9e2ec 48%, #93a7bd);
-        }
-
-        .astronaut-leg.left { left: 48px; }
-        .astronaut-leg.right { right: 48px; }
-
-        .astronaut-boot {
-            position: absolute;
-            bottom: -4px;
-            left: -5px;
-            width: 36px;
-            height: 13px;
-            border: 2px solid #637991;
-            border-radius: 5px 5px 8px 8px;
-            background: linear-gradient(180deg, #91a5bc, #4c6078);
-        }
-
-        @keyframes astronaut-float {
-            0%, 100% { transform: translateY(12px); }
-            50% { transform: translateY(5px); }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .astronaut-figure { animation: none; }
-        }
-
-        .hero-metrics {
-            width: min(100%, 250px);
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 8px;
-        }
-
-        .metric {
-            padding: 10px 8px;
-            background: rgba(17, 29, 42, 0.88);
-            border: 2px solid var(--line);
-            text-align: center;
-        }
-
-        .metric .metric-name {
-            display: block;
-            color: var(--muted);
-            font-size: 9px;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-
-        .metric .metric-value {
-            font-size: 12px;
-            font-weight: 800;
-            color: var(--cream);
-        }
-
-        .metric .metric-value.warn {
-            color: var(--orange);
-        }
-
-        .plain-panel {
-            min-height: 132px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .plain-panel .stat {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid var(--line);
-            padding: 12px 0;
-            color: var(--muted);
-            font-size: 11px;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            font-weight: 800;
-        }
-
-        .plain-panel .stat:last-child {
-            border-bottom: none;
-        }
-
-        .plain-panel .stat strong {
-            color: var(--cream);
-            font-size: 12px;
-            letter-spacing: 0.05em;
-        }
-
-        .action-row {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 12px;
-            padding: 4px 14px 18px;
-        }
-
-        .event-panel {
-            display: none;
-            gap: 12px;
-            margin: 0 14px 14px;
-            padding: 14px;
-            border: 2px solid rgba(255, 130, 77, 0.55);
-            background: rgba(36, 25, 29, 0.9);
-        }
-
-        .event-panel.visible {
-            display: grid;
-        }
-
-        .event-title {
-            margin: 0;
-            color: var(--orange);
-            font-size: 11px;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-        }
-
-        .event-description {
-            margin: 0;
-            color: var(--cream);
-            font-size: 14px;
-        }
-
-        .event-actions {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-        }
-
-        .action-btn {
-            appearance: none;
-            border: 2px solid rgba(146, 173, 199, 0.35);
-            background: rgba(18, 30, 45, 0.92);
-            color: var(--cream);
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            cursor: pointer;
-            min-height: 54px;
-            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
-        }
-
-        .action-btn:hover {
-            transform: translateY(-1px);
-            border-color: rgba(125, 225, 236, 0.6);
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
-        }
-
-        .action-btn.primary {
-            background: linear-gradient(180deg, rgba(255, 130, 77, 0.94), rgba(183, 85, 42, 0.94));
-            color: #1a120d;
-            border-color: rgba(255, 170, 113, 0.8);
-        }
-
-        .action-btn.success {
-            background: linear-gradient(180deg, rgba(99, 173, 123, 0.9), rgba(46, 112, 73, 0.9));
-            color: #edf9ec;
-            border-color: rgba(154, 214, 161, 0.6);
-        }
-
-        .status-toast {
-            position: absolute;
-            z-index: 20;
-            top: 16px;
-            right: 18px;
-            background: rgba(7, 11, 22, 0.8);
-            border: 1px solid rgba(125, 225, 236, 0.32);
-            color: var(--cyan);
-            font-size: 10px;
-            letter-spacing: 0.16em;
-            padding: 9px 12px;
-            text-transform: uppercase;
-            font-weight: 800;
-            opacity: 0;
-            transform: translateY(-6px);
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            pointer-events: none;
-        }
-
-        .status-toast.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        @media (max-width: 760px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
-
-            .hud-row {
-                grid-template-columns: 1fr;
-            }
-
-            .title-block {
-                order: -1;
-            }
-
-            .action-row {
-                grid-template-columns: 1fr;
-            }
-
-            .event-actions {
-                grid-template-columns: 1fr;
-            }
-        }
+            margin: 0; min-height: 100vh; color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+            background: radial-gradient(ellipse at 82% 35%, rgba(32, 71, 116, .28), transparent 38%),
+                        radial-gradient(ellipse at 12% 4%, rgba(255, 118, 74, .11), transparent 32%), var(--bg);
+        }
+        a { color: inherit; text-decoration: none; }
+        .wrap { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+        header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+                     padding: 16px 0; border-bottom: 1px solid var(--border); }
+        .brand { font-size: 12px; font-weight: 800; letter-spacing: 1.4px; }
+        .brand small { display: block; color: var(--muted); font-weight: 500; font-size: 10px; letter-spacing: 1px; }
+        .clock { display: flex; align-items: center; gap: 18px; }
+        .sol { font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+        .sol small { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0; }
+        .pips { display: flex; gap: 6px; }
+        .pip { padding: 5px 10px; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); font-size: 11px; font-weight: 700; }
+        .pip.done { color: var(--green); border-color: rgba(86, 227, 159, .4); }
+        .pip.now { color: #160c0a; background: var(--orange); border-color: var(--orange); }
+        .meta { text-align: right; color: var(--muted); font-size: 11px; line-height: 1.6; }
+        .meta strong { color: var(--cyan); }
+
+        .layout { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px; padding: 22px 0 40px; align-items: start; }
+        @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } .meta { text-align: left; } }
+        .panel { padding: 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); }
+        .stack { display: flex; flex-direction: column; gap: 20px; }
+        .label { color: var(--muted); font-size: 11px; font-weight: 700; margin-bottom: 10px; }
+
+        /* Decision card: the one memorable element */
+        .decision { border-color: rgba(255, 118, 74, .45); padding: 26px; }
+        .tag { display: inline-block; padding: 3px 9px; border-radius: 4px; background: rgba(112, 225, 232, .1); color: var(--cyan); font-size: 11px; font-weight: 800; }
+        .decision h1 { margin: 14px 0 10px; font-size: clamp(26px, 4vw, 38px); line-height: 1.08; letter-spacing: -1.2px; }
+        .decision p { margin: 0 0 22px; color: var(--muted); font-size: 15px; line-height: 1.7; max-width: 60ch; }
+        .choices { display: grid; gap: 12px; }
+        .choice { text-align: left; padding: 16px 18px; border: 1px solid var(--border); border-radius: 6px; background: rgba(7, 11, 22, .6);
+                  color: var(--text); font: inherit; font-size: 14px; font-weight: 700; line-height: 1.4; cursor: pointer; }
+        .choice span { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 800; }
+        .choice.yes span { color: var(--green); } .choice.no span { color: var(--amber); }
+        .choice:hover:not(:disabled) { border-color: var(--cyan); background: rgba(112, 225, 232, .07); }
+        .choice:focus-visible, .tab:focus-visible, .btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+        .choice:disabled { opacity: .5; cursor: wait; }
+        .feedback { margin-top: 18px; padding: 12px 14px; border-left: 2px solid var(--orange); background: rgba(255, 118, 74, .07);
+                    color: var(--muted); font-size: 13px; line-height: 1.6; min-height: 20px; }
+        .feedback:empty { display: none; }
+
+        /* Tabs and dashboards */
+        .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+        .tab { flex: 1; padding: 11px 10px; border: 1px solid var(--border); border-radius: 6px; background: transparent;
+               color: var(--muted); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+        .tab[aria-selected="true"] { color: var(--text); border-color: var(--cyan); background: rgba(112, 225, 232, .08); }
+        [hidden] { display: none !important; }
+        .section { margin-top: 18px; } .section:first-child { margin-top: 0; }
+        .row { margin-bottom: 14px; }
+        .row .top { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; margin-bottom: 6px; }
+        .row .top b { font-weight: 700; } .row .top span { color: var(--muted); }
+        .bar { height: 8px; border-radius: 6px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+        .fill { height: 100%; border-radius: 6px; transition: width .4s ease; }
+        .ok .fill, .fill.ok { background: var(--green); } .warn .fill, .fill.warn { background: var(--amber); } .crit .fill, .fill.crit { background: var(--red); }
+        .row .note { margin-top: 5px; font-size: 11px; color: var(--muted); }
+        .row.warn .note { color: var(--amber); } .row.crit .note { color: var(--red); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+        .cell { padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: rgba(7, 11, 22, .5); }
+        .cell small { display: block; color: var(--muted); font-size: 11px; margin-bottom: 3px; }
+        .cell b { font-size: 16px; }
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip { padding: 5px 10px; border-radius: 4px; border: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--muted); }
+        .chip.on { color: var(--green); border-color: rgba(86, 227, 159, .4); } .chip.off { color: var(--red); border-color: rgba(255, 107, 107, .4); }
+        .score { font-size: 64px; line-height: 1; font-weight: 850; letter-spacing: -3px; color: var(--cyan); }
+        .rank { margin: 6px 0 14px; color: var(--orange); font-weight: 800; font-size: 15px; }
+
+        .log { max-height: 260px; overflow: auto; margin: 0; padding: 0; list-style: none; }
+        .log li { padding: 9px 0; border-bottom: 1px solid rgba(255, 255, 255, .06); color: var(--muted); font-size: 12px; line-height: 1.55; }
+        .log li b { color: var(--text); } .log li.report { color: var(--cyan); }
+
+        .overlay { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 20px; background: rgba(7, 11, 22, .92); }
+        .ending { max-width: 520px; text-align: center; }
+        .ending h2 { margin: 0 0 10px; font-size: 40px; letter-spacing: -1.5px; }
+        .ending.win h2 { color: var(--green); } .ending.lose h2 { color: var(--red); }
+        .ending p { color: var(--muted); line-height: 1.7; }
+        .btn { display: inline-flex; margin-top: 14px; padding: 14px 22px; border-radius: 4px; background: var(--orange); color: #160c0a; font-weight: 900; font-size: 13px; }
+
+        /* What changed after each decision */
+        .chg-group { margin-top: 14px; }
+        .chg-group .label { margin-bottom: 8px; }
+        .chg-group.incident .label { color: var(--red); }
+        .chg-group.sol .label { color: var(--cyan); }
+        .chg { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chg-item { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border); background: rgba(7, 11, 22, .6); font-size: 12px; color: var(--muted); }
+        .chg-item b { color: var(--text); }
+        .chg-item.up { border-color: rgba(86, 227, 159, .45); } .chg-item.up .arrow { color: var(--green); }
+        .chg-item.down { border-color: rgba(255, 107, 107, .45); } .chg-item.down .arrow { color: var(--red); }
+
+        /* Crew (astronaut sprites, scaled down) */
+        .crew { display: flex; flex-wrap: wrap; gap: 4px 8px; padding: 12px; border: 1px solid var(--border); border-radius: 6px;
+                background: radial-gradient(ellipse at 50% 120%, rgba(255, 118, 74, .18), transparent 60%), rgba(7, 11, 22, .6); }
+        .astro { position: relative; width: 69px; height: 86px; }
+        .astro .astronaut-figure { position: absolute; left: 0; top: 0; width: 164px; height: 205px; transform: scale(.42); transform-origin: 0 0; filter: drop-shadow(0 10px 8px rgba(0, 0, 0, .35)); }
+        .astro.warn .astronaut-visor { border-color: var(--amber); box-shadow: inset 0 0 16px rgba(255, 176, 94, .55); }
+        .astro.crit .astronaut-visor { border-color: var(--red); box-shadow: inset 0 0 16px rgba(255, 107, 107, .7); }
+        .astronaut-backpack { position: absolute; z-index: 1; top: 87px; left: 23px; width: 34px; height: 70px; border: 3px solid #53677d; border-radius: 11px 7px 8px 11px; background: linear-gradient(90deg, #71859c, #c0cede 46%, #8298b0); box-shadow: inset 5px 0 rgba(255,255,255,.16), 5px 3px 0 rgba(12,21,33,.7); }
+        .astronaut-backpack::before { content: ""; position: absolute; top: 12px; right: -5px; width: 5px; height: 39px; border-radius: 0 4px 4px 0; background: var(--orange); }
+        .astronaut-ear { position: absolute; z-index: 3; top: 39px; width: 14px; height: 28px; border: 3px solid #6f839a; border-radius: 6px; background: linear-gradient(90deg, #9fb3ca, #e0e8f1); }
+        .astronaut-ear.left { left: 34px; } .astronaut-ear.right { right: 34px; }
+        .astronaut-helmet { position: absolute; z-index: 4; top: 5px; left: 39px; width: 86px; height: 83px; padding: 8px; border: 4px solid #9aacc1; border-radius: 48% 48% 42% 42%; background: linear-gradient(145deg, #f1f5fa 4%, #bbc9db 45%, #71869e 100%); box-shadow: inset 0 0 0 2px rgba(255,255,255,.56); }
+        .astronaut-visor { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; border: 2px solid rgba(125, 225, 236, .72); border-radius: 48% 48% 43% 43%; background: linear-gradient(135deg, transparent 35%, rgba(125,225,236,.3) 36%, transparent 52%), linear-gradient(160deg, #354f69, #111b2b 68%, #243b53); box-shadow: inset 0 0 16px rgba(0,0,0,.65); }
+        .astronaut-visor::before { content: ""; position: absolute; top: 7px; left: 11px; width: 24px; height: 5px; border-radius: 50%; background: rgba(220,247,255,.7); transform: rotate(-32deg); }
+        .astronaut-neck { position: absolute; z-index: 2; top: 76px; left: 67px; width: 30px; height: 19px; border: 3px solid #6b7e95; border-radius: 6px; background: linear-gradient(90deg, #71869d, #d4dfeb, #71869d); }
+        .astronaut-arm { position: absolute; z-index: 2; top: 96px; width: 29px; height: 58px; border: 3px solid #879bb2; border-radius: 15px; background: linear-gradient(90deg, #9eafc3, #e3eaf2 48%, #9aadc2); }
+        .astronaut-arm.left { left: 19px; transform: rotate(12deg); } .astronaut-arm.right { right: 19px; transform: rotate(-12deg); }
+        .astronaut-glove { position: absolute; bottom: -9px; left: 1px; width: 21px; height: 19px; border: 3px solid #71859d; border-radius: 8px 8px 10px 10px; background: linear-gradient(180deg, #dce5ef, #8ea2b9); }
+        .astronaut-torso { position: absolute; z-index: 3; top: 84px; left: 43px; width: 78px; height: 76px; border: 4px solid #71859c; border-radius: 24px 24px 17px 17px; background: linear-gradient(105deg, #93a6bc, #e3eaf2 44%, #a4b5c8); box-shadow: inset 0 0 0 2px rgba(255,255,255,.42), 0 4px 0 #53677d; }
+        .astronaut-console { position: absolute; top: 14px; left: 18px; display: flex; align-items: center; justify-content: center; gap: 4px; width: 34px; height: 25px; border: 2px solid #637990; border-radius: 5px; background: #23364a; }
+        .astronaut-console span { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); }
+        .astronaut-console span:last-child { background: var(--orange); }
+        .astronaut-belt { position: absolute; right: 7px; bottom: 9px; left: 7px; height: 7px; border-radius: 4px; background: #667d95; }
+        .astronaut-leg { position: absolute; z-index: 2; top: 148px; width: 32px; height: 48px; border: 3px solid #8296ad; border-radius: 8px 8px 11px 11px; background: linear-gradient(90deg, #96a9be, #d9e2ec 48%, #93a7bd); }
+        .astronaut-leg.left { left: 48px; } .astronaut-leg.right { right: 48px; }
+        .astronaut-boot { position: absolute; bottom: -4px; left: -5px; width: 36px; height: 13px; border: 2px solid #637991; border-radius: 5px 5px 8px 8px; background: linear-gradient(180deg, #91a5bc, #4c6078); }
+        @media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
     </style>
 </head>
 <body>
-    <main class="game-page" aria-label="Mars colony game interface">
-        <div class="status-toast" id="statusToast">System status: nominal</div>
+<div class="wrap">
+    <header class="top">
+        <a class="brand" href="/">NASA SPACE APPS<small>MARS CHALLENGE</small></a>
+        <div class="clock" aria-live="polite">
+            <div class="sol">Sol <span id="sol">1</span> <small>of <span id="duration">{{ loadout.mission_duration_days }}</span></small></div>
+            <div class="pips" id="pips"></div>
+        </div>
+        <div class="meta">
+            <strong>{{ site_name }}</strong><br>
+            {{ crew_size }} crew · {{ rocket.name }} · {{ temperature }}°C
+        </div>
+    </header>
 
-        <div class="hud-row">
-            <button class="hud-chip" type="button" data-action="solar">
-                <span class="mini-badge">☀</span>
-                Solar sensors
-            </button>
+    <main class="layout">
+        <div class="stack">
+            <section class="panel decision" aria-live="polite">
+                <span class="tag" id="tag">LOADING</span>
+                <h1 id="title">Establishing link with the habitat…</h1>
+                <p id="description"></p>
+                <div class="choices">
+                    <button class="choice yes" id="btn-yes" type="button" disabled><span>Option A</span><em id="label-yes" style="font-style:normal"></em></button>
+                    <button class="choice no" id="btn-no" type="button" disabled><span>Option B</span><em id="label-no" style="font-style:normal"></em></button>
+                </div>
+                <div class="feedback" id="feedback"></div>
+                <div id="changes" aria-live="polite"></div>
+            </section>
 
-            <div class="title-block">
-                Mars Colony
-                <strong>Mission Control</strong>
-            </div>
-
-            <button class="hud-chip right" type="button" data-action="food">
-                <span class="mini-badge">▣</span>
-                Colony Food
-            </button>
+            <section class="panel">
+                <div class="label">Mission log</div>
+                <ul class="log" id="log"></ul>
+            </section>
         </div>
 
-        <section class="main-layout">
-            <aside class="side-panel">
-                <div class="panel-box plain-panel">
-                    <div class="panel-header">
-                        <div class="panel-label">Solar</div>
-                        <div class="dot"></div>
-                    </div>
-                    <div class="solar-scene" aria-label="solar array status">
-                        <div class="solar-array" aria-hidden="true">
-                            <span class="panel-line"></span>
-                        </div>
-                        <div class="panel-text" id="solarStatusText">Optimal power</div>
-                    </div>
-                </div>
-
-                <div class="panel-box plain-panel">
-                    <div class="panel-header">
-                        <div class="panel-label">Power</div>
-                        <div class="panel-value" id="powerValue">{{ "%.0f"|format(site.solar_efficiency * 100) }}%</div>
-                    </div>
-                    <div class="stat"><span>Input</span><strong id="powerInput">{{ "%.1f"|format(site.solar_efficiency) }}×</strong></div>
-                    <div class="stat"><span>Risk</span><strong id="powerRisk">Low</strong></div>
-                </div>
-            </aside>
-
-            <div class="main-hero">
-                <div class="hero-status">Crew {{ crew_size }} · {{ difficulty }}</div>
-
-                <div class="astronaut-stage" role="img" aria-label="Astronaut in a Mars habitat">
-                    <span class="stage-label">FIELD CREW <strong>01</strong></span>
-                    <div class="astronaut-figure" aria-hidden="true">
-                        <div class="astronaut-backpack"></div>
-                        <div class="astronaut-ear left"></div>
-                        <div class="astronaut-ear right"></div>
-                        <div class="astronaut-helmet">
-                            <span class="astronaut-visor"></span>
-                        </div>
-                        <div class="astronaut-neck"></div>
-                        <div class="astronaut-arm left"><span class="astronaut-glove"></span></div>
-                        <div class="astronaut-arm right"><span class="astronaut-glove"></span></div>
-                        <div class="astronaut-torso">
-                            <div class="astronaut-console"><span></span><span></span><span></span></div>
-                            <span class="astronaut-belt"></span>
-                        </div>
-                        <div class="astronaut-leg left"><span class="astronaut-boot"></span></div>
-                        <div class="astronaut-leg right"><span class="astronaut-boot"></span></div>
-                    </div>
-                </div>
-
-                <div class="hero-metrics">
-                    <div class="metric">
-                        <span class="metric-name">O₂</span>
-                        <span class="metric-value" id="oxygenMetric">{{ "%.2f"|format(daily_requirements.oxygen_kg) }}</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-name">Water</span>
-                        <span class="metric-value" id="waterMetric">{{ "%.2f"|format(daily_requirements.water_l) }}</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-name">Food</span>
-                        <span class="metric-value warn" id="foodMetric">{{ "%.2f"|format(daily_requirements.food_kg) }}</span>
-                    </div>
-                </div>
+        <aside class="panel">
+            <div class="tabs" role="tablist">
+                <button class="tab" role="tab" id="tab-survival" aria-selected="true" aria-controls="view-survival" type="button">Life support / structure</button>
+                <button class="tab" role="tab" id="tab-research" aria-selected="false" aria-controls="view-research" type="button">Science points</button>
             </div>
-
-            <aside class="side-panel">
-                <div class="panel-box plain-panel">
-                    <div class="panel-header">
-                        <div class="panel-label">Supplies</div>
-                        <div class="dot" style="background: var(--green);"></div>
-                    </div>
-                    <div class="stat"><span>Food</span><strong id="foodStock">{{ "%.2f"|format(daily_requirements.food_kg) }} kg</strong></div>
-                    <div class="stat"><span>Water</span><strong id="waterStock">{{ "%.2f"|format(daily_requirements.water_l) }} L</strong></div>
-                    <div class="stat"><span>O₂</span><strong id="oxygenStock">{{ "%.2f"|format(daily_requirements.oxygen_kg) }} kg</strong></div>
-                </div>
-
-                <div class="panel-box plain-panel">
-                    <div class="panel-header">
-                        <div class="panel-label">Habitat</div>
-                        <div class="panel-value" id="habitatStatus">Stable</div>
-                    </div>
-                    <div class="stat"><span>Temp</span><strong>{{ habitat_targets.temperature_c }}°C</strong></div>
-                    <div class="stat"><span>Pressure</span><strong>{{ habitat_targets.pressure_psi }} psi</strong></div>
-                    <div class="stat"><span>Humidity</span><strong>{{ habitat_targets.humidity_pct }}%</strong></div>
-                    <div class="stat"><span>Equipment integrity</span><strong id="equipmentIntegrity">100%</strong></div>
-                </div>
-            </aside>
-        </section>
-
-        <section class="event-panel" id="situationPanel" aria-live="polite">
-            <h2 class="event-title">Solar storm warning</h2>
-            <p class="event-description" id="situationText"></p>
-            <div class="event-actions">
-                <button class="action-btn primary" type="button" id="answerYes">Yes</button>
-                <button class="action-btn" type="button" id="answerNo">No</button>
-            </div>
-        </section>
-
-        <div class="action-row">
-            <button class="action-btn" type="button" data-action="shelter">Stay inside</button>
-            <button class="action-btn primary" type="button" data-action="sendMore">Send more</button>
-            <button class="action-btn success" type="button" data-action="repair">Repair</button>
-        </div>
+            <div id="view-survival" role="tabpanel"></div>
+            <div id="view-research" role="tabpanel" hidden></div>
+        </aside>
     </main>
+</div>
 
-    <script>
-        const toast = document.getElementById('statusToast');
-        const solarStatusText = document.getElementById('solarStatusText');
-        const powerValue = document.getElementById('powerValue');
-        const powerInput = document.getElementById('powerInput');
-        const powerRisk = document.getElementById('powerRisk');
-        const habitatStatus = document.getElementById('habitatStatus');
-        const situationPanel = document.getElementById('situationPanel');
-        const situationText = document.getElementById('situationText');
-        const equipmentIntegrity = document.getElementById('equipmentIntegrity');
-        const situationRetryDelay = 1000;
+<div class="overlay" id="ending" hidden>
+    <div class="panel ending" id="ending-card">
+        <h2 id="ending-title"></h2>
+        <p id="ending-text"></p>
+        <p id="ending-stats"></p>
+        <a class="btn" href="/">Plan a new mission</a>
+    </div>
+</div>
 
-        const state = {
-            solar: {{ site.solar_efficiency }},
-            power: {{ site.solar_efficiency * 100 }},
-            food: {{ daily_requirements.food_kg }},
-            water: {{ daily_requirements.water_l }},
-            oxygen: {{ daily_requirements.oxygen_kg }},
-            integrity: 100
-        };
-
-        let currentSituationId = null;
-        let situationRetryTimer = null;
-
-        function showToast(message) {
-            toast.textContent = message;
-            toast.classList.add('visible');
-            clearTimeout(showToast.timer);
-            showToast.timer = setTimeout(() => toast.classList.remove('visible'), 1200);
-        }
-
-        function applySolarStatus() {
-            if (state.solar >= 1.2) {
-                solarStatusText.textContent = 'Optimal power';
-                powerRisk.textContent = 'Low';
-                habitatStatus.textContent = 'Stable';
-            } else if (state.solar >= 0.9) {
-                solarStatusText.textContent = 'Balanced output';
-                powerRisk.textContent = 'Moderate';
-                habitatStatus.textContent = 'Stable';
-            } else {
-                solarStatusText.textContent = 'Dust covered';
-                powerRisk.textContent = 'High';
-                habitatStatus.textContent = 'Alert';
-            }
-
-            state.power = Math.max(30, Math.min(100, state.solar * 100));
-            powerValue.textContent = Math.round(state.power) + '%';
-            powerInput.textContent = state.solar.toFixed(1) + '×';
-        }
-
-        function updateResources() {
-            document.getElementById('foodStock').textContent = state.food.toFixed(2) + ' kg';
-            document.getElementById('waterStock').textContent = state.water.toFixed(2) + ' L';
-            document.getElementById('oxygenStock').textContent = state.oxygen.toFixed(2) + ' kg';
-            document.getElementById('foodMetric').textContent = state.food.toFixed(2);
-            document.getElementById('waterMetric').textContent = state.water.toFixed(2);
-            document.getElementById('oxygenMetric').textContent = state.oxygen.toFixed(2);
-            equipmentIntegrity.textContent = state.integrity + '%';
-        }
-
-        async function enviarAcaoSituacao(action) {
-            const response = await fetch('/game/situation', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: action,
-                    choice_index: currentSituationId,
-                    solar: state.solar,
-                    integrity: state.integrity
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Situation request failed with status ' + response.status);
-            }
-
-            return response.json();
-        }
-
-        function mostrarSituacao(situation) {
-            clearTimeout(situationRetryTimer);
-            currentSituationId = situation ? situation.id : null;
-            if (situation) {
-                situationText.textContent = situation.prompt;
-                situationPanel.classList.add('visible');
-            } else {
-                situationPanel.classList.remove('visible');
-                situationRetryTimer = setTimeout(novaSituacao, situationRetryDelay);
-            }
-        }
-
-        async function novaSituacao() {
-            try {
-                const result = await enviarAcaoSituacao('next');
-                mostrarSituacao(result.situation);
-            } catch (error) {
-                console.error('Unable to load a game situation.', error);
-                showToast('Unable to load a solar event. Please try again.');
-            }
-        }
-
-        async function responderSituacao(action) {
-            if (currentSituationId === null) {
-                return;
-            }
-
-            try {
-                const result = await enviarAcaoSituacao(action);
-                state.solar = result.solar;
-                state.power = result.power;
-                state.integrity = result.integrity;
-                applySolarStatus();
-                updateResources();
-                mostrarSituacao(result.situation);
-                showToast(result.message);
-            } catch (error) {
-                console.error('Unable to submit the situation response.', error);
-                showToast('Unable to submit your response. Please try again.');
-            }
-        }
-
-        document.getElementById('answerYes').addEventListener('click', function () {
-            responderSituacao('yes');
-        });
-        document.getElementById('answerNo').addEventListener('click', function () {
-            responderSituacao('no');
-        });
-
-        document.querySelectorAll('[data-action]').forEach((button) => {
-            button.addEventListener('click', function () {
-                const action = this.dataset.action;
-
-                if (action === 'solar') {
-                    state.solar = state.solar >= 1.2 ? 0.8 : state.solar + 0.2;
-                    applySolarStatus();
-                    showToast('Solar sensors updated');
-                }
-
-                if (action === 'food') {
-                    state.food += 12.5;
-                    updateResources();
-                    showToast('Food reserves increased');
-                }
-
-                if (action === 'shelter') {
-                    state.solar = Math.max(0.5, state.solar - 0.1);
-                    state.food = Math.max(0, state.food - 2.5);
-                    state.water = Math.max(0, state.water - 1.5);
-                    applySolarStatus();
-                    updateResources();
-                    showToast('Crew sheltered');
-                }
-
-                if (action === 'sendMore') {
-                    state.food += 18;
-                    state.water += 14;
-                    state.oxygen += 11;
-                    updateResources();
-                    showToast('Resupply sent');
-                }
-
-                if (action === 'repair') {
-                    state.solar = Math.min(1.5, state.solar + 0.45);
-                    applySolarStatus();
-                    showToast('Solar array repaired');
-                }
-            });
-        });
-
-        applySolarStatus();
-        updateResources();
-        novaSituacao();
-    </script>
+<script id="game-bootstrap" type="application/json">
+    {{ {
+        "crewSize": crew_size,
+        "siteName": site_name,
+        "dailyRequirements": daily_requirements,
+        "habitatTargets": habitat_targets,
+        "radiationMsvDay": radiation_msv_day,
+        "loadout": loadout
+    } | tojson }}
+</script>
+<script src="{{ url_for('static', filename='js/game.js') }}"></script>
 </body>
 </html>

@@ -1,3 +1,0 @@
-dict = {1:"A solar storm is a phenomenon where intense solar rays and winds strike a planet/surface, causing several damages", 2:"a solar panel is a big panel made out of glass and other materials that gets energy from sun rays, and send it for houses and other places", 3:" Water and Oxigen are essencial resources  to survive in other planet , like mars, but, in this place, all our resources including energy, are limited "}
-
-print(dict[1,2,3])
