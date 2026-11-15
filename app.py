@@ -58,6 +58,11 @@ def build_loadout_from_params(
 
 @app.route('/')
 def index():
+    return render_template('index.html')
+
+
+@app.route('/planning')
+def planning():
     default_modules = ['solar_array', 'wpa_recycler']
     initial_loadout = build_loadout_from_params(
         crew_size=4,
@@ -67,7 +72,7 @@ def index():
     )
 
     return render_template(
-        'index.html',
+        'planning.html',
         nasa_constants=NASA_CONSTANTS,
         mars_sites=MARS_SITES,
         modules=MODULES,

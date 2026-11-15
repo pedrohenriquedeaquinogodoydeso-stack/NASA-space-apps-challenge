@@ -10,23 +10,12 @@
 <body style="margin: 0; background: #070b16;">
     <div id="root"></div>
 
-    <!-- Dados injetados pelo Flask via Jinja2 -->
-    <script id="mission-bootstrap" type="application/json">
-        {{ {
-            "nasaConstants": nasa_constants,
-            "marsSites": mars_sites,
-            "modules": modules,
-            "rocketArchitectures": rocket_architectures,
-            "defaultModules": default_modules,
-            "initialLoadout": initial_loadout
-        } | tojson }}
-    </script>
-
     <!-- React e ReactDOM via CDN -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
-    <!-- Seu código JavaScript externo -->
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <!-- Código compartilhado (estilos, header e footer) + página inicial -->
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
 </body>
 </html>
