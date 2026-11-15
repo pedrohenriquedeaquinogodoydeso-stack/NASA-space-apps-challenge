@@ -71,6 +71,41 @@
                     color: var(--muted); font-size: 13px; line-height: 1.6; min-height: 20px; }
         .feedback:empty { display: none; }
 
+        .dictionary-book { position: relative; min-height: 248px; padding-top: 36px; perspective: 900px; }
+        .dictionary-cover, .dictionary-page { position: absolute; top: 36px; bottom: 0; border: 1px solid var(--border); border-radius: 6px; }
+        .dictionary-cover { z-index: 2; left: 0; display: flex; flex-direction: column; justify-content: center; width: 100%; padding: 22px 24px 22px 32px;
+                            overflow: hidden; color: var(--text); background: linear-gradient(135deg, rgba(255, 118, 74, .2), transparent 62%), var(--panel);
+                            box-shadow: 0 8px 18px rgba(0, 0, 0, .24); transform-origin: left center; transition: width .45s ease, transform .45s ease; }
+        .dictionary-cover::before { position: absolute; top: 0; bottom: 0; left: 0; width: 12px; background: rgba(0, 0, 0, .22); content: ""; }
+        .dictionary-series, .dictionary-page-number { color: var(--cyan); font-size: 9px; font-weight: 800; letter-spacing: 1.5px; }
+        .dictionary-cover h3 { margin: 12px 0 6px; color: var(--text); font-size: clamp(21px, 3vw, 29px); line-height: 1.1; }
+        .dictionary-cover p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+        .dictionary-bookmarks { position: absolute; top: 0; right: 12px; z-index: 3; display: flex; gap: 5px; }
+        .dictionary-bookmark { padding: 8px 10px 10px; border: 0; border-radius: 4px 4px 0 0; color: #311e00; font: inherit; font-size: 10px; font-weight: 800;
+                               cursor: pointer; transform: translateY(4px); transition: transform .18s ease, filter .18s ease; }
+        .dictionary-bookmark[data-entry="solar-storm"] { background: var(--orange); }
+        .dictionary-bookmark[data-entry="solar-panel"] { background: var(--cyan); }
+        .dictionary-bookmark[data-entry="life-support"] { background: var(--green); }
+        .dictionary-bookmark:hover, .dictionary-bookmark[aria-expanded="true"] { filter: brightness(1.12); transform: translateY(0); }
+        .dictionary-bookmark:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+        .dictionary-page { right: 0; left: 48%; display: flex; flex-direction: column; justify-content: center; padding: 20px 18px 20px 24px;
+                           background: linear-gradient(90deg, rgba(0, 0, 0, .18), transparent 18%), rgba(58, 0, 0, .55);
+                           opacity: 0; visibility: hidden; transition: opacity .25s ease, visibility .25s ease; }
+        .dictionary-page h3 { margin: 12px 0 8px; color: var(--text); font-size: 18px; }
+        .dictionary-page p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+        .dictionary-book.is-open .dictionary-cover { width: 48%; transform: rotateY(-8deg); }
+        .dictionary-book.is-open .dictionary-page { opacity: 1; visibility: visible; }
+        @media (max-width: 560px) {
+            .dictionary-book { min-height: 350px; }
+            .dictionary-cover { padding: 16px 18px 16px 26px; }
+            .dictionary-book.is-open .dictionary-cover { right: 0; bottom: auto; width: 100%; height: 100px; transform: none; }
+            .dictionary-book.is-open .dictionary-cover h3 { margin: 6px 0 0; font-size: 18px; }
+            .dictionary-cover p { display: none; }
+            .dictionary-page { top: 148px; right: 0; bottom: 0; left: 0; padding: 18px; }
+            .dictionary-bookmarks { right: 4px; gap: 3px; }
+            .dictionary-bookmark { padding-right: 7px; padding-left: 7px; font-size: 9px; }
+        }
+
         /* Tabs and dashboards */
         .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
         .tab { flex: 1; padding: 11px 10px; border: 1px solid var(--border); border-radius: 6px; background: transparent;
@@ -178,6 +213,27 @@
             <section class="panel">
                 <div class="label">Mission log</div>
                 <ul class="log" id="log"></ul>
+            </section>
+
+            <section class="panel dictionary-panel" aria-labelledby="dictionary-heading">
+                <div class="label" id="dictionary-heading">Space Apps field dictionary</div>
+                <div class="dictionary-book" id="dictionary-book">
+                    <div class="dictionary-cover">
+                        <span class="dictionary-series">MARS MISSION FIELD GUIDE</span>
+                        <h3>Dictionary<br>Space Apps</h3>
+                        <p>Choose a colored bookmark to open the book.</p>
+                    </div>
+                    <div class="dictionary-page" id="dictionary-page" aria-live="polite">
+                        <span class="dictionary-page-number">FIELD NOTES</span>
+                        <h3 id="dictionary-term">Choose a bookmark</h3>
+                        <p id="dictionary-definition">Select one of the colored tabs to read a space dictionary entry.</p>
+                    </div>
+                    <nav class="dictionary-bookmarks" aria-label="Dictionary bookmarks">
+                        <button class="dictionary-bookmark" type="button" data-entry="solar-storm" aria-controls="dictionary-page" aria-expanded="false">Solar storm</button>
+                        <button class="dictionary-bookmark" type="button" data-entry="solar-panel" aria-controls="dictionary-page" aria-expanded="false">Solar panel</button>
+                        <button class="dictionary-bookmark" type="button" data-entry="life-support" aria-controls="dictionary-page" aria-expanded="false">Water &amp; oxygen</button>
+                    </nav>
+                </div>
             </section>
         </div>
 

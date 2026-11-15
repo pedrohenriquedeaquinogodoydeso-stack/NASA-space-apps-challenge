@@ -82,21 +82,13 @@ class MarsGameManager:
         self.site = MARS_SITES[self.site_id]
         self.crew = getattr(loadout, "crew_size", 4)
         self.duration = getattr(loadout, "mission_duration_days", 500)
-        self.science_goal = getattr(loadout, "science_goal", 500)
-        self.sample_target_mult = getattr(loadout, "sample_target_mult", 1.0)
-
         self.modules = {
             "solar_array": getattr(loadout, "has_solar_array", True),
             "wpa_recycler": getattr(loadout, "has_wpa_recycler", True),
             "greenhouse": getattr(loadout, "has_greenhouse", False),
             "moxie_isru": getattr(loadout, "has_moxie_isru", False),
         }
-
-        base_objectives = SITE_OBJECTIVES[self.site_id]
-        self.objectives = [
-            {**obj, "target": max(1, round(obj["target"] * self.sample_target_mult))}
-            for obj in base_objectives
-        ]
+        self.objectives = SITE_OBJECTIVES[self.site_id]
 
         self.start = {
             "oxygen": getattr(loadout, "initial_oxygen_kg", NASA_CONSTANTS["INITIAL_OXIGEN_KG"]),
@@ -337,20 +329,7 @@ class MarsGameManager:
             if hit:
                 return self._finish(False, title, text)
         if self.sol > self.duration:
-            samples_ok = all(self.samples[i] >= obj["target"] for i, obj in enumerate(self.objectives))
-            science_ok = self.science >= self.science_goal
-            if science_ok and samples_ok:
-                self._finish(
-                    True,
-                    "Mission complete — Full Success",
-                    f"The crew survived all {self.duration} sols and achieved all scientific and rock sample targets!"
-                )
-            else:
-                self._finish(
-                    True,
-                    "Mission complete — Partial Success",
-                    f"The crew survived {self.duration} sols, though some research ({round(self.science)}/{self.science_goal} pts) or sample goals fell short."
-                )
+            self._finish(True, "Mission complete", f"The crew survived all {self.duration} sols on Mars.")
 
     def _finish(self, victory, title, text):
         self.game_over, self.victory = True, victory
@@ -359,13 +338,7 @@ class MarsGameManager:
     def _ending_payload(self):
         return {
             "game_over": True, "victory": self.victory, **self.ending,
-            "stats": {
-                "sol": min(self.sol, self.duration),
-                "science": round(self.science),
-                "science_goal": self.science_goal,
-                "samples": sum(self.samples),
-                "samples_target": sum(o["target"] for o in self.objectives),
-            },
+            "stats": {"sol": min(self.sol, self.duration), "science": round(self.science), "samples": sum(self.samples)},
         }
 
     # ------------------------------------------------------------ dashboards
@@ -424,20 +397,14 @@ class MarsGameManager:
         rank_idx = max(i for i, (need, _) in enumerate(RANKS) if self.science >= need)
         nxt = RANKS[rank_idx + 1][0] if rank_idx + 1 < len(RANKS) else None
         return {
-            "site": self.site["short_name"],
-            "multiplier": self.site["science_multiplier"],
-            "score": round(self.science),
-            "science_goal": self.science_goal,
-            "goal_pct": min(100, round(100 * self.science / max(1, self.science_goal))),
-            "rank": RANKS[rank_idx][1],
-            "next_rank_at": nxt,
+            "site": self.site["short_name"], "multiplier": self.site["science_multiplier"],
+            "score": round(self.science), "rank": RANKS[rank_idx][1], "next_rank_at": nxt,
             "objectives": [
                 {"name": o["name"], "count": self.samples[i], "target": o["target"],
                  "pct": min(100, round(100 * self.samples[i] / o["target"]))}
                 for i, o in enumerate(self.objectives)
             ],
             "samples_total": sum(self.samples),
-            "samples_target_total": sum(o["target"] for o in self.objectives),
             "avg_per_sol": round(self.science / max(1, self.sol - 1), 1),
         }
 

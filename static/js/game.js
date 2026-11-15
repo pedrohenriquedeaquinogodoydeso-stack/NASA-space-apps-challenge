@@ -7,6 +7,23 @@
 
     const BOOT = JSON.parse(document.getElementById("game-bootstrap").textContent);
     const PERIODS = ["Morning", "Afternoon", "Night"];
+    const DICTIONARY_ENTRIES = [
+        {
+            id: "solar-storm",
+            term: "Solar storm",
+            definition: "A solar storm occurs when intense radiation and charged particles from the Sun hit a planet or its surface, potentially causing damage."
+        },
+        {
+            id: "solar-panel",
+            term: "Solar panel",
+            definition: "A solar panel is a large panel made from glass and other materials. It captures sunlight and converts it into electricity for homes and other places."
+        },
+        {
+            id: "life-support",
+            term: "Water and oxygen",
+            definition: "Water and oxygen are essential resources for survival on another planet, such as Mars. Resources, including energy, are limited there."
+        }
+    ];
     const colors = {
         background: "#311e00",
         panel: "rgba(58, 0, 0, 0.78)",
@@ -347,7 +364,33 @@
         });
     }
 
+    function initDictionary() {
+        const book = $("dictionary-book");
+        const buttons = book.querySelectorAll(".dictionary-bookmark");
+
+        buttons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                const isOpen = button.getAttribute("aria-expanded") === "true";
+                buttons.forEach(function (item) { item.setAttribute("aria-expanded", "false"); });
+                if (isOpen) {
+                    book.classList.remove("is-open");
+                    $("dictionary-term").textContent = "Choose a bookmark";
+                    $("dictionary-definition").textContent = "Select one of the colored tabs to read a space dictionary entry.";
+                    return;
+                }
+
+                const entry = DICTIONARY_ENTRIES.find(function (item) { return item.id === button.dataset.entry; });
+                if (!entry) return;
+                $("dictionary-term").textContent = entry.term;
+                $("dictionary-definition").textContent = entry.definition;
+                button.setAttribute("aria-expanded", "true");
+                book.classList.add("is-open");
+            });
+        });
+    }
+
     async function init() {
+        initDictionary();
         $("btn-yes").addEventListener("click", function () { choose("yes"); });
         $("btn-no").addEventListener("click", function () { choose("no"); });
         $("tab-survival").addEventListener("click", function () { selectTab("survival"); });
