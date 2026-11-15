@@ -424,80 +424,73 @@ function PlanningApp() {
                         }),
                         h("div", {
                             style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" }
-                        }, h("span", null, "1 PERSON"), h("span", null, "12 PEOPLE"))
+                        }, h("span", null, "1 PERSON"), h("span", null, "12 PEOPLE")),
+                    h("div", {
+                        style: {
+                            marginTop: "20px",
+                            paddingTop: "18px",
+                            borderTop: "1px solid " + colors.border
+                        }
+                    },
+                        h("div", { style: { color: colors.orange, fontSize: "10px", fontWeight: 800, letterSpacing: "1.5px" } }, "MISSION PARAMETERS & OBJECTIVES"),
+                        h("h2", { style: { margin: "4px 0 16px", fontSize: "18px", fontWeight: 800 } }, "Configure Mission Goals & Duration"),
+                        h("div", {
+                            style: {
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                                gap: "14px"
+                            }
+                        },
+                            h("div", { style: { padding: "14px", border: "1px solid " + colors.border, borderRadius: "6px", background: "rgba(7, 11, 22, 0.5)" } },
+                                h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+                                    h("span", { style: { fontSize: "12px", fontWeight: 700 } }, "Mission Duration (Sols)"),
+                                    h("span", { style: { color: colors.cyan, fontSize: "16px", fontWeight: 800 } }, durationDays)
+                                ),
+                                h("input", {
+                                    type: "range",
+                                    min: 100,
+                                    max: 1000,
+                                    step: 25,
+                                    value: durationDays,
+                                    onChange: function (e) { setDurationDays(Number(e.target.value)); playButtonSound4(); },
+                                    style: { width: "100%", margin: "10px 0", accentColor: colors.orange, cursor: "pointer" }
+                                }),
+                                h("div", { style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" } }, h("span", null, "100 Sols"), h("span", null, "1000 Sols"))
+                            ),
+                            h("div", { style: { padding: "14px", border: "1px solid " + colors.border, borderRadius: "6px", background: "rgba(7, 11, 22, 0.5)" } },
+                                h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+                                    h("span", { style: { fontSize: "12px", fontWeight: 700 } }, "Science Points Goal"),
+                                    h("span", { style: { color: colors.cyan, fontSize: "16px", fontWeight: 800 } }, scienceGoal + " pts")
+                                ),
+                                h("input", {
+                                    type: "range",
+                                    min: 100,
+                                    max: 2000,
+                                    step: 50,
+                                    value: scienceGoal,
+                                    onChange: function (e) { setScienceGoal(Number(e.target.value)); playButtonSound4(); },
+                                    style: { width: "100%", margin: "10px 0", accentColor: colors.orange, cursor: "pointer" }
+                                }),
+                                h("div", { style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" } }, h("span", null, "100 pts"), h("span", null, "2000 pts"))
+                            ),
+                            h("div", { style: { padding: "14px", border: "1px solid " + colors.border, borderRadius: "6px", background: "rgba(7, 11, 22, 0.5)" } },
+                                h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+                                    h("span", { style: { fontSize: "12px", fontWeight: 700 } }, "Rock Sample Target Scale"),
+                                    h("span", { style: { color: colors.cyan, fontSize: "16px", fontWeight: 800 } }, sampleTargetMult + "x")
+                                ),
+                                h("input", {
+                                    type: "range",
+                                    min: 0.5,
+                                    max: 2.0,
+                                    step: 0.25,
+                                    value: sampleTargetMult,
+                                    onChange: function (e) { setSampleTargetMult(Number(e.target.value)); playButtonSound4(); },
+                                    style: { width: "100%", margin: "10px 0", accentColor: colors.orange, cursor: "pointer" }
+                                }),
+                                h("div", { style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" } }, h("span", null, "0.5x (Easier)"), h("span", null, "2.0x (Hardcore)"))
+                            )
+                        )
                     )
-                )
-            ),
-
-            // Mission Parameters & Goals Section
-            h("section", {
-                style: {
-                    marginTop: "24px",
-                    padding: "22px",
-                    border: "1px solid " + colors.border,
-                    borderRadius: "8px",
-                    background: colors.panel
-                }
-            },
-                h("div", { style: { color: colors.orange, fontSize: "10px", fontWeight: 800, letterSpacing: "1.5px" } }, "MISSION PARAMETERS & OBJECTIVES"),
-                h("h2", { style: { margin: "4px 0 16px", fontSize: "18px", fontWeight: 800 } }, "Configure Mission Goals & Duration"),
-                h("div", {
-                    style: {
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                        gap: "20px"
-                    }
-                },
-                    // Duration Slider
-                    h("div", { style: { padding: "14px", border: "1px solid " + colors.border, borderRadius: "6px", background: "rgba(7, 11, 22, 0.5)" } },
-                        h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
-                            h("span", { style: { fontSize: "12px", fontWeight: 700 } }, "Mission Duration (Sols)"),
-                            h("span", { style: { color: colors.cyan, fontSize: "16px", fontWeight: 800 } }, durationDays)
-                        ),
-                        h("input", {
-                            type: "range",
-                            min: 100,
-                            max: 1000,
-                            step: 25,
-                            value: durationDays,
-                            onChange: function (e) { setDurationDays(Number(e.target.value)); playButtonSound4();},
-                            style: { width: "100%", margin: "10px 0", accentColor: colors.orange, cursor: "pointer" }
-                        }),
-                        h("div", { style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" } }, h("span", null, "100 Sols"), h("span", null, "1000 Sols"))
-                    ),
-                    // Science Goal Slider
-                    h("div", { style: { padding: "14px", border: "1px solid " + colors.border, borderRadius: "6px", background: "rgba(7, 11, 22, 0.5)" } },
-                        h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
-                            h("span", { style: { fontSize: "12px", fontWeight: 700 } }, "Science Points Goal"),
-                            h("span", { style: { color: colors.cyan, fontSize: "16px", fontWeight: 800 } }, scienceGoal + " pts")
-                        ),
-                        h("input", {
-                            type: "range",
-                            min: 100,
-                            max: 2000,
-                            step: 50,
-                            value: scienceGoal,
-                            onChange: function (e) { setScienceGoal(Number(e.target.value)); playButtonSound4(); },
-                            style: { width: "100%", margin: "10px 0", accentColor: colors.orange, cursor: "pointer" }
-                        }),
-                        h("div", { style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" } }, h("span", null, "100 pts"), h("span", null, "2000 pts"))
-                    ),
-                    // Rock Sample Target Multiplier
-                    h("div", { style: { padding: "14px", border: "1px solid " + colors.border, borderRadius: "6px", background: "rgba(7, 11, 22, 0.5)" } },
-                        h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
-                            h("span", { style: { fontSize: "12px", fontWeight: 700 } }, "Rock Sample Target Scale"),
-                            h("span", { style: { color: colors.cyan, fontSize: "16px", fontWeight: 800 } }, sampleTargetMult + "x")
-                        ),
-                        h("input", {
-                            type: "range",
-                            min: 0.5,
-                            max: 2.0,
-                            step: 0.25,
-                            value: sampleTargetMult,
-                            onChange: function (e) { setSampleTargetMult(Number(e.target.value)); playButtonSound4();},
-                            style: { width: "100%", margin: "10px 0", accentColor: colors.orange, cursor: "pointer" }
-                        }),
-                        h("div", { style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" } }, h("span", null, "0.5x (Easier)"), h("span", null, "2.0x (Hardcore)"))
                     )
                 )
             ),
