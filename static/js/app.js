@@ -797,7 +797,7 @@ function App() {
                                     mod.cons
                                 ),
                                 mod.notes ? h("p", { style: { marginTop: "10px" } },
-                                    h("strong", { style: { color: colors.muted } }, "− Notes: "),
+                                    h("strong", { style: { color: colors.gray } }, "− Notes: "),
                                     mod.notes
                                 ) : null
                             )
