@@ -17,6 +17,13 @@ function playButtonSound() {
         console.warn("Não foi possível tocar o som do botão.", error);
     });
 }
+function playButtonSound2() {
+    const sound = new Audio("/static/music/camera.mp3");
+    sound.volume = 0.9;
+    sound.play().catch(function (error) {
+        console.warn("Não foi possível tocar o som do botão.", error);
+    });
+}
 
 function PlanningApp() {
     const [crewSize, setCrewSize] = React.useState(BOOTSTRAP.initialLoadout.crew_size);
@@ -220,9 +227,10 @@ function PlanningApp() {
                             const site = entry[1];
                             const isSelected = key === siteId;
                             return h("button", {
+
                                 key: key,
                                 type: "button",
-                                onClick: function () { setSiteId(key); },
+                                onClick: function () { setSiteId(key); playButtonSound2(); },
                                 "aria-pressed": isSelected,
                                 "aria-label": site.short_name + ", average temperature " + site.avg_temp_c + " degrees Celsius",
                                 title: site.name + " · " + site.avg_temp_c + "°C",
@@ -722,7 +730,7 @@ function PlanningApp() {
                         onClick: function (event) {
                             event.preventDefault();
 
-                            const audio = new Audio("/static/music/click.mp3");
+                            const audio = new Audio("/static/music/rocket.mp3");
                             audio.volume = 0.4;
 
                             audio.addEventListener("ended", function () {
