@@ -766,7 +766,6 @@ function PlanningApp() {
                                     return;
                                 }
                                 animationStarted = true;
-                                screen.classList.remove("launch-shake");
                                 if (reducedMotion) {
                                     animationFinished = true;
                                     navigateWhenReady();
@@ -786,8 +785,13 @@ function PlanningApp() {
                                 navigateWhenReady();
                             }
 
-                            if (!reducedMotion) {
-                                screen.classList.remove("launch-final");
+                            // Tempo da contagem regressiva (5, 4, 3, 2, 1) antes da decolagem
+                            const COUNTDOWN_MS = 5000;
+
+                            function startShake() {
+                                if (reducedMotion || navigated || animationStarted) {
+                                    return;
+                                }
                                 screen.classList.remove("launch-shake");
                                 void screen.offsetWidth;
                                 screen.classList.add("launch-shake");
@@ -795,6 +799,12 @@ function PlanningApp() {
 
                             const audio = new Audio("/static/music/rocket.mp3");
                             audio.volume = 0.4;
+
+                            // Conta os 5s a partir do momento em que o áudio realmente começa a tocar,
+                            // assim o tremor fica sincronizado mesmo se o mp3 demorar a carregar
+                            audio.addEventListener("playing", function () {
+                                setTimeout(startShake, COUNTDOWN_MS);
+                            }, { once: true });
 
                             audio.addEventListener("ended", function () {
                                 audioFinished = true;
