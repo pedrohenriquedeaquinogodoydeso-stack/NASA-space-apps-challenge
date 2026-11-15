@@ -7,6 +7,30 @@
 
     const BOOT = JSON.parse(document.getElementById("game-bootstrap").textContent);
     const PERIODS = ["Morning", "Afternoon", "Night"];
+    const colors = {
+        background: "#311e00",
+        panel: "rgba(58, 0, 0, 0.78)",
+        text: "#f4f7ff",
+        muted: "#a7b3c9",
+        orange: "#ff764a",
+        cyan: "#70e1e8",
+        green: "#56e39f",
+        red: "#ff6b6b",
+        border: "rgba(173, 194, 225, 0.17)"
+    };
+
+    const rootStyle = document.documentElement.style;
+    rootStyle.setProperty("--bg", colors.background);
+    rootStyle.setProperty("--panel", colors.panel);
+    rootStyle.setProperty("--text", colors.text);
+    rootStyle.setProperty("--cream", colors.text);
+    rootStyle.setProperty("--muted", colors.muted);
+    rootStyle.setProperty("--orange", colors.orange);
+    rootStyle.setProperty("--cyan", colors.cyan);
+    rootStyle.setProperty("--green", colors.green);
+    rootStyle.setProperty("--red", colors.red);
+    rootStyle.setProperty("--border", colors.border);
+    rootStyle.setProperty("--amber", colors.orange);
 
     const state = { situation: null, solar: 1.0, integrity: 100, busy: false, lastReportSol: 0 };
     const $ = (id) => document.getElementById(id);
