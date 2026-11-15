@@ -671,7 +671,11 @@ function App() {
                                 h("p", { style: { margin: 0 } },
                                     h("strong", { style: { color: colors.red } }, "− Drawback: "),
                                     mod.cons
-                                )
+                                ),
+                                mod.notes ? h("p", { style: { marginTop: "10px" } },
+                                    h("strong", { style: { color: colors.gray } }, "− Notes: "),
+                                    mod.notes
+                                ) : null
                             )
                         );
                     })

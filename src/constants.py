@@ -212,7 +212,7 @@ MODULES = {
         "is_generator": True,   
         "image": "solar_array.png",
         "pros": "Generates renewable surface power scaled by site solar efficiency with low launch mass.",
-        "cons": "Power drops during dust storms or high-latitude winters; requires regular dust cleaning."
+        "cons": "Power drops during dust storms or high-latitude winters; requires regular dust cleaning.",
     },
     "wpa_recycler": {
         "name": "WPA Water Recycler",
@@ -221,7 +221,8 @@ MODULES = {
         "is_generator": False,
         "image": "wpa_recycler.png",
         "pros": "Recovers up to 93% of wastewater and humidity (ISS standard), drastically extending water reserves.",
-        "cons": "Consumes continuous electrical power and requires spare filtration cartridges."
+        "cons": "Consumes continuous electrical power and requires spare filtration cartridges.",
+        "notes": "Recycling is especially important for missions longer than 30 days, as short missions may not support recycling due to mass and power constraints."
     },
     "greenhouse": {
         "name": "Veggie / Plant Habitat",
