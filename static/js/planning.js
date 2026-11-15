@@ -10,6 +10,7 @@ const NASA_CONSTANTS = BOOTSTRAP.nasaConstants;
 const MARS_SITES = BOOTSTRAP.marsSites;
 const MODULES = BOOTSTRAP.modules;
 const ROCKET_ARCHITECTURES = BOOTSTRAP.rocketArchitectures;
+const MAX_MODULES_MASS_KG = NASA_CONSTANTS.MAX_MODULES_MASS_KG;
 function playButtonSound() {
     const sound = new Audio("/static/music/tool.mp3");
     sound.volume = 0.9;
@@ -55,6 +56,9 @@ function PlanningApp() {
 
     const selectedSite = MARS_SITES[siteId];
     const selectedRocket = ROCKET_ARCHITECTURES[rocketId];
+    const selectedModulesMassKg = activeModules.reduce(function (total, moduleId) {
+        return total + ((MODULES[moduleId] || {}).mass_kg || 0);
+    }, 0);
 
     const baseSuppliesMassKg =
         NASA_CONSTANTS.INITIAL_OXIGEN_KG +
@@ -93,7 +97,11 @@ function PlanningApp() {
             if (prev.includes(modId)) {
                 return prev.filter(function (id) { return id !== modId; });
             }
-            return prev.concat([modId]);
+            const nextModules = prev.concat([modId]);
+            const nextMass = nextModules.reduce(function (total, id) {
+                return total + ((MODULES[id] || {}).mass_kg || 0);
+            }, 0);
+            return nextMass <= MAX_MODULES_MASS_KG ? nextModules : prev;
         });
     }
 
@@ -611,8 +619,9 @@ function PlanningApp() {
                         h("h2", { style: { margin: "4px 0 0", fontSize: "18px", fontWeight: 800 } }, "Colony Modules & Trade-offs")
                     ),
                     h("span", { style: { color: colors.muted, fontSize: "11px" } },
-                        "Selected Modules Mass: " + Number(loadoutPreview.modules_mass_kg).toLocaleString() +
-                        " kg (+ " + Number(baseSuppliesMassKg).toLocaleString() + " kg base supplies)"
+                        "Module mass: " + Number(selectedModulesMassKg).toLocaleString() +
+                        " / " + Number(MAX_MODULES_MASS_KG).toLocaleString() + " kg max" +
+                        " · " + Number(baseSuppliesMassKg).toLocaleString() + " kg base supplies"
                     )
                 ),
                 h("div", {
@@ -626,21 +635,27 @@ function PlanningApp() {
                         const key = entry[0];
                         const mod = entry[1];
                         const isActive = activeModules.includes(key);
+                        const exceedsModuleLimit = !isActive &&
+                            selectedModulesMassKg + mod.mass_kg > MAX_MODULES_MASS_KG;
                         const powerLabel = (mod.is_generator ? "+" : "-") + mod.power_kwe.toFixed(1) + " kWe " + (mod.is_generator ? "Output" : "Demand");
 
                         return h("button", {
                             key: key,
                             type: "button",
                             onClick: function () { toggleModule(key); playButtonSound(); },
+                            disabled: exceedsModuleLimit,
                             "aria-pressed": isActive,
+                            "aria-label": mod.name + ", " + Number(mod.mass_kg).toLocaleString() + " kg" +
+                                (exceedsModuleLimit ? ", exceeds the module mass limit" : ""),
                             style: {
                                 padding: "16px",
                                 textAlign: "left",
-                                border: "1px solid " + (isActive ? colors.cyan : colors.border),
+                                border: "1px solid " + (isActive ? colors.cyan : exceedsModuleLimit ? colors.red : colors.border),
                                 borderRadius: "6px",
-                                background: isActive ? "rgba(112, 225, 232, 0.08)" : "rgba(7, 11, 22, 0.5)",
+                                background: isActive ? "rgba(112, 225, 232, 0.08)" : exceedsModuleLimit ? "rgba(255, 107, 107, 0.06)" : "rgba(7, 11, 22, 0.5)",
                                 color: colors.text,
-                                cursor: "pointer",
+                                cursor: exceedsModuleLimit ? "not-allowed" : "pointer",
+                                opacity: exceedsModuleLimit ? 0.65 : 1,
                                 display: "flex",
                                 flexDirection: "column",
                                 justifyContent: "space-between",
@@ -669,10 +684,10 @@ function PlanningApp() {
                                                 borderRadius: "4px",
                                                 fontSize: "9px",
                                                 fontWeight: 800,
-                                                background: isActive ? colors.cyan : "rgba(255,255,255,0.08)",
-                                                color: isActive ? "#070b16" : colors.muted
+                                                background: isActive ? colors.cyan : exceedsModuleLimit ? colors.red : "rgba(255,255,255,0.08)",
+                                                color: isActive || exceedsModuleLimit ? "#070b16" : colors.muted
                                             }
-                                        }, isActive ? "EQUIPPED" : "ADD")
+                                        }, isActive ? "EQUIPPED" : exceedsModuleLimit ? "OVER LIMIT" : "ADD")
                                     ),
                                     h("div", {
                                         style: {

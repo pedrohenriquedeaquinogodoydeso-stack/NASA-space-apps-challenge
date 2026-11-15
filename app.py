@@ -40,6 +40,17 @@ def build_loadout_from_params(
     science_goal: int = 500,
     sample_target_mult: float = 1.0,
 ) -> MissionLoadout:
+    modules_mass_kg = sum(
+        MODULES[module_id]["mass_kg"]
+        for module_id in set(active_modules)
+        if module_id in MODULES
+    )
+    max_modules_mass_kg = NASA_CONSTANTS["MAX_MODULES_MASS_KG"]
+    if modules_mass_kg > max_modules_mass_kg:
+        raise ValueError(
+            f"Selected modules exceed the {max_modules_mass_kg:,.0f} kg module mass limit."
+        )
+
     loadout = MissionLoadout(
         has_solar_array='solar_array' in active_modules,
         has_wpa_recycler='wpa_recycler' in active_modules,
@@ -101,15 +112,18 @@ def preview_loadout():
     ):
         return jsonify({'error': 'Invalid mission parameters'}), 400
 
-    loadout = build_loadout_from_params(
-        crew_size=crew_size,
-        site_id=site_id,
-        rocket_id=rocket_id,
-        active_modules=active_modules,
-        duration_days=duration_days,
-        science_goal=science_goal,
-        sample_target_mult=sample_target_mult,
-    )
+    try:
+        loadout = build_loadout_from_params(
+            crew_size=crew_size,
+            site_id=site_id,
+            rocket_id=rocket_id,
+            active_modules=active_modules,
+            duration_days=duration_days,
+            science_goal=science_goal,
+            sample_target_mult=sample_target_mult,
+        )
+    except ValueError as error:
+        return jsonify({'error': str(error)}), 400
     return jsonify(loadout.to_dict())
 
 
@@ -150,15 +164,18 @@ def game():
     site = MARS_SITES[site_id]
     rocket = ROCKET_ARCHITECTURES[rocket_id]
 
-    loadout = build_loadout_from_params(
-        crew_size=crew_size,
-        site_id=site_id,
-        rocket_id=rocket_id,
-        active_modules=active_modules,
-        duration_days=duration_days,
-        science_goal=science_goal,
-        sample_target_mult=sample_target_mult,
-    )
+    try:
+        loadout = build_loadout_from_params(
+            crew_size=crew_size,
+            site_id=site_id,
+            rocket_id=rocket_id,
+            active_modules=active_modules,
+            duration_days=duration_days,
+            science_goal=science_goal,
+            sample_target_mult=sample_target_mult,
+        )
+    except ValueError as error:
+        abort(400, description=str(error))
 
     global mars_game_manager
     mars_game_manager = MarsGameManager(loadout=loadout)
