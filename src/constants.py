@@ -209,7 +209,7 @@ MODULES = {
         "name": "Lightweight Solar Array",
         "mass_kg": 800.0,
         "power_kwe": 10.0,
-        "is_generator": True,
+        "is_generator": True,   
         "image": "solar_array.png",
         "pros": "Generates renewable surface power scaled by site solar efficiency with low launch mass.",
         "cons": "Power drops during dust storms or high-latitude winters; requires regular dust cleaning."
