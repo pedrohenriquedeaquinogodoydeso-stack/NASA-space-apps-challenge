@@ -730,16 +730,63 @@ function PlanningApp() {
                         onClick: function (event) {
                             event.preventDefault();
 
+                            const screen = document.getElementById("root");
+                            const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                            let animationFinished = false;
+                            let audioFinished = false;
+                            let animationStarted = false;
+                            let navigated = false;
+                            function navigateWhenReady() {
+                                if (animationFinished && audioFinished && !navigated) {
+                                    navigated = true;
+                                    window.location.href = gameUrl;
+                                }
+                            }
+
+                            function beginLaunchTransition() {
+                                if (animationStarted) {
+                                    return;
+                                }
+                                animationStarted = true;
+                                screen.classList.remove("launch-shake");
+                                if (reducedMotion) {
+                                    animationFinished = true;
+                                    navigateWhenReady();
+                                    return;
+                                }
+                                screen.addEventListener("animationend", onLaunchAnimationEnd);
+                                void screen.offsetWidth;
+                                screen.classList.add("launch-final");
+                            }
+
+                            function onLaunchAnimationEnd(animationEvent) {
+                                if (animationEvent.target !== screen || animationEvent.animationName !== "launch-screen-final") {
+                                    return;
+                                }
+                                screen.removeEventListener("animationend", onLaunchAnimationEnd);
+                                animationFinished = true;
+                                navigateWhenReady();
+                            }
+
+                            if (!reducedMotion) {
+                                screen.classList.remove("launch-final");
+                                screen.classList.remove("launch-shake");
+                                void screen.offsetWidth;
+                                screen.classList.add("launch-shake");
+                            }
+
                             const audio = new Audio("/static/music/rocket.mp3");
                             audio.volume = 0.4;
 
                             audio.addEventListener("ended", function () {
-                                window.location.href = gameUrl;
+                                audioFinished = true;
+                                beginLaunchTransition();
                             }, { once: true });
 
                             audio.play().catch(function (error) {
                                 console.warn("Não foi possível tocar o som.", error);
-                                window.location.href = gameUrl;
+                                audioFinished = true;
+                                beginLaunchTransition();
                             });
                         },
                     style: {
