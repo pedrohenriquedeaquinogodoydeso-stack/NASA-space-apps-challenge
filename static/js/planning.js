@@ -10,6 +10,13 @@ const NASA_CONSTANTS = BOOTSTRAP.nasaConstants;
 const MARS_SITES = BOOTSTRAP.marsSites;
 const MODULES = BOOTSTRAP.modules;
 const ROCKET_ARCHITECTURES = BOOTSTRAP.rocketArchitectures;
+function playButtonSound() {
+    const sound = new Audio("/static/music/tool.mp3");
+    sound.volume = 0.9;
+    sound.play().catch(function (error) {
+        console.warn("Não foi possível tocar o som do botão.", error);
+    });
+}
 
 function PlanningApp() {
     const [crewSize, setCrewSize] = React.useState(BOOTSTRAP.initialLoadout.crew_size);
@@ -605,7 +612,7 @@ function PlanningApp() {
                         return h("button", {
                             key: key,
                             type: "button",
-                            onClick: function () { toggleModule(key); },
+                            onClick: function () { toggleModule(key); playButtonSound(); },
                             "aria-pressed": isActive,
                             style: {
                                 padding: "16px",
@@ -712,6 +719,21 @@ function PlanningApp() {
                 h("a", {
                     href: gameUrl,
                     "aria-label": "Initiate Mars rocket launch",
+                        onClick: function (event) {
+                            event.preventDefault();
+
+                            const audio = new Audio("/static/music/click.mp3");
+                            audio.volume = 0.4;
+
+                            audio.addEventListener("ended", function () {
+                                window.location.href = gameUrl;
+                            }, { once: true });
+
+                            audio.play().catch(function (error) {
+                                console.warn("Não foi possível tocar o som.", error);
+                                window.location.href = gameUrl;
+                            });
+                        },
                     style: {
                         display: "flex",
                         alignItems: "center",
