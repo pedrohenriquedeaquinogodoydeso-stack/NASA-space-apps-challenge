@@ -553,6 +553,27 @@ SITUATIONS = [
     # NIGHT SITUATIONS
     # ==========================================
     {
+        "id": "module_breach",
+        "tag": "STRUCTURE",
+        "periods": ["night"],
+        "requires": {"integrity": {"max": 50}},
+        "title": "Critical structural breach",
+        "description": "The latches on a secondary module gave way under the thermal cycle. Air is rapidly escaping into the Martian atmosphere.",
+        "yes": opt(
+            "Isolate and sacrifice the module immediately",
+            "Fire doors closed. The module is lost, but main pressure has stabilized.",
+            {"integrity": 10, "oxygen_kg": -15, "science": -4},
+            rk(0.20, "The abrupt cutoff damages neighboring electrical connections.", power= -2)
+        ),
+        "no": opt(
+            "Attempt a nighttime emergency EVA weld",
+            "The crew tries to save the module in the dark and cold.",
+            {"oxygen_kg": -8},
+            rk(0.65, "A failed weld spreads the leak and worsens the crisis.", integrity=-15, oxygen_kg=-25)
+        ),
+    },
+
+    {
         "id": "thermal_fault",
         "tag": "STRUCTURE",
         "periods": ["night"],

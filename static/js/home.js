@@ -226,7 +226,7 @@ function Home() {
                 h("h1", { style: { flex: "1 1 280px", margin: 0, fontWeight: 800, letterSpacing: "1.5px", fontSize: "15px"} }, "Oxygen: It is essential for the Cellular respiration and the maintenance of life, being used in aerobic respiration of animals, plants, and most living organisms. On a space mission, it becomes one of the first points that must be observed. Average per crew member:"),
             ),
             h("div", { style: { marginTop: "36px", background: colors.panel, flex: "1 1 240px", padding: "22px", boxSizing: "border-box", border: "1px solid " + colors.border, borderRadius: "6px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "20px" } },
-                h("img", { src: "/static/imgs/water.png", alt: "Water", style: { width: "100px", height: "100px", objectFit: "contain", flex: "0 0 100px" } }),
+                h("img", { src: "/static/imgs/waternfood.png", alt: "Water and Food", style: { width: "100px", height: "100px", objectFit: "contain", flex: "0 0 100px" } }),
                 h("h1", { style: { flex: "1 1 280px", margin: 0, fontWeight: 800, letterSpacing: "1.5px", fontSize: "15px"} }, "Water and Food: Is crucial for the survival of the crew, and it is necessary to plan the amount of water and food that will be needed for the entire mission. Average per crew member: "),
             ),
             h("div", { style: { marginTop: "36px", background: colors.panel, flex: "1 1 240px", padding: "22px", boxSizing: "border-box", border: "1px solid " + colors.border, borderRadius: "6px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "20px" } },

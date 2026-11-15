@@ -172,7 +172,9 @@ class MarsGameManager:
         )
         event_power = sum(m["kwe"] for m in self.power_mods)  # temporary event loads (negative) or savings (positive)
         supply = max(0.0, base + solar_gen + event_power)
-        return supply, demand, supply - demand, min(1.0, supply / demand)
+        net = supply - demand
+        ratio = 1.0 if demand == 0 else min(1.0, max(0.0, net / demand))
+        return supply, demand, net, ratio
 
     # ------------------------------------------------------------------ stress
     def _stress_status(self):
