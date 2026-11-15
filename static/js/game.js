@@ -8,14 +8,14 @@ function playButtonSound3() {
     const sound = new Audio("/static/music/page.mp3");
     sound.volume = 0.3;
     sound.play().catch(function (error) {
-        console.warn("Não foi possível tocar o som do botão.", error);
+        console.warn("Not possible to play button sound.", error);
     });
 }
 function playButtonSoundwin() {
     const sound = new Audio("/static/music/win.mp3");
     sound.volume = 0.3;
     sound.play().catch(function (error) {
-        console.warn("Não foi possível tocar o som do botão.", error);
+        console.warn("Not possible to play button sound.", error);
     });
 }
 (function () {
