@@ -30,7 +30,7 @@ def _clamp(value, low, high):
     return max(low, min(high, value))
 
 
-EFFECT_KEYS = {"oxygen_kg", "water_l", "food_kg", "integrity", "solar", "science", "sample"}
+EFFECT_KEYS = {"oxygen_kg", "water_l", "food_kg", "integrity", "solar", "power", "science", "sample"}
 STAT_KEYS = {"oxygen_kg", "water_l", "food_kg", "integrity", "solar", "power", "crew", "sol", "science", "samples"}
 REQUIRE_KEYS = STAT_KEYS | {"modules", "without_modules"}
 
@@ -107,6 +107,7 @@ class MarsGameManager:
         self.food = self.start["food"]
         self.integrity = 100.0
         self.solar = 1.0
+        self.power = 0.0
 
         self.sol = 1
         self.period_idx = 0
@@ -133,7 +134,9 @@ class MarsGameManager:
             if on and not MODULES[m]["is_generator"]
         )
         supply = base + solar_gen
-        return supply, demand, supply - demand, min(1.0, supply / demand)
+        net = supply - demand + self.power
+        ratio = 1.0 if demand == 0 else min(1.0, max(0.0, net / demand))
+        return supply, demand, net, ratio
 
     # ------------------------------------------------------------- daily flow
     def _flows(self):
@@ -194,6 +197,10 @@ class MarsGameManager:
             old = self.science
             self.science = max(0.0, old + pts)
             add("Science points", old, self.science, "pts")
+        if "power" in fx:
+            old = self.power
+            self.power += fx["power"]
+            add("Power", old, self.power, "kWe", 1)
         if "sample" in fx and fx["sample"] < len(self.samples):
             self.samples[fx["sample"]] += 1
             changes.append(self._change(self.objectives[fx["sample"]]["name"], 1, "sample"))

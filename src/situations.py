@@ -542,15 +542,16 @@ SITUATIONS = [
             "Isolate and sacrifice the module immediately",
             "Fire doors closed. The module is lost, but main pressure has stabilized.",
             {"integrity": 10, "oxygen_kg": -15, "science": -4},
-            rk(0.20, "The abrupt cutoff damages neighboring electrical connections.", "power": -2)
+            rk(0.20, "The abrupt cutoff damages neighboring electrical connections.", power= -2)
         ),
         "no": opt(
             "Attempt a nighttime emergency EVA weld",
             "The crew tries to save the module in the dark and cold.",
             {"oxygen_kg": -8},
-            rk(0.65, "A failed weld spreads the leak and worsens the crisis.", "integrity": -15, "oxygen_kg": -25)
+            rk(0.65, "A failed weld spreads the leak and worsens the crisis.", integrity=-15, oxygen_kg=-25)
         ),
     },
+
     {
         "id": "thermal_fault",
         "tag": "STRUCTURE",
