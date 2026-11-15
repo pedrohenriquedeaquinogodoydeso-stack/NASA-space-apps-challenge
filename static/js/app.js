@@ -12,8 +12,8 @@ const MODULES = BOOTSTRAP.modules;
 const ROCKET_ARCHITECTURES = BOOTSTRAP.rocketArchitectures;
 
 const colors = {
-    background: "#070b16",
-    panel: "rgba(17, 26, 45, 0.78)",
+    background: "#311e00",
+    panel: "rgba(58, 0, 0, 0.78)",
     text: "#f4f7ff",
     muted: "#a7b3c9",
     orange: "#ff764a",
