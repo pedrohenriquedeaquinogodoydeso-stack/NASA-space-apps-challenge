@@ -45,8 +45,8 @@ function playButtonSoundwin() {
         {
             id: "mission-overview",
             label: "Mission overview",
-            term: "Mars mission",
-            definition: "A mission to Mars depends on making the right choices. Plan your colony, manage resources, and find out if your crew can survive on the Red Planet. Mars Mission is an interactive simulation created for the NASA Space Apps Challenge. First you design a crewed mission to Mars on the planning screen. Then you take command of it, managing resources and facing the unexpected. Plan it. Launch it. Survive it."
+            term: "Humanity’s Future Is Red",
+            definition: "A mission to Mars depends on making the right choices. Plan your colony, manage resources, and find out if your crew can survive on the Red Planet. Humanity’s Future Is Red is an interactive simulation created for the NASA Space Apps Challenge. First you design a crewed mission to Mars on the planning screen. Then you take command of it, managing resources and facing the unexpected. Plan it. Launch it. Survive it."
         },
         {
             id: "landing-sites",
