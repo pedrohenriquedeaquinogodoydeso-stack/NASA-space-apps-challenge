@@ -9,6 +9,13 @@ function playButtonSound3() {
         console.warn("Não foi possível tocar o som do botão.", error);
     });
 }
+function playButtonSoundwin() {
+    const sound = new Audio("/static/music/win.mp3");
+    sound.volume = 0.3;
+    sound.play().catch(function (error) {
+        console.warn("Não foi possível tocar o som do botão.", error);
+    });
+}
 (function () {
     "use strict";
 
@@ -476,6 +483,7 @@ function playButtonSound3() {
     }
 
     function showEnding(s) {
+        playButtonSoundwin();
         $("btn-yes").disabled = true;
         $("btn-no").disabled = true;
         $("ending-card").className = "panel ending " + (s.victory ? "win" : "lose");
