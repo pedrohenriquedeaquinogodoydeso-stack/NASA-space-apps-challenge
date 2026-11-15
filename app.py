@@ -181,10 +181,31 @@ def game_situation():
     if isinstance(choice_index, bool) or not isinstance(choice_index, int):
         abort(400)
 
+<<<<<<< HEAD
     solar = number_from_payload(payload, 'solar', 0.4, 2.0)
     integrity = number_from_payload(payload, 'integrity', 0, 100)
 
     return jsonify(mars_game_manager.process_action(choice_index, action, solar, integrity))
+=======
+    solar = number_from_payload(payload, 'solar', 0, 1.5)
+    integrity = number_from_payload(payload, 'integrity', 0, 100)
+
+    if action == 'yes':
+        solar = max(0, solar - 0.1)
+        message = SITUATION['yes_consequence']
+    else:
+        integrity = max(0, integrity - 10)
+        message = SITUATION['no_consequence']
+
+    return jsonify(
+        solar=solar,
+        power=max(0, min(100, solar * 100)),
+        integrity=integrity,
+        message=message,
+        situation=maybe_create_situation(),
+    )
+
+>>>>>>> e06e8c21c7e71c30ce5f0a2cc2326b7127e165fd
 
 if __name__ == '__main__':
     app.run(debug=True)
