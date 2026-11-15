@@ -9,7 +9,7 @@
 import random
 
 from src.constants import MARS_SITES, MODULES, NASA_CONSTANTS
-from src.situations import PERIOD_LABELS, PERIODS, SITE_OBJECTIVES, SITUATIONS
+from src.situations import NASA_KINDS, PERIOD_LABELS, PERIODS, SITE_OBJECTIVES, SITUATIONS
 
 SOLAR_MIN, SOLAR_MAX = 0.4, 2.0
 GREENHOUSE_FOOD_KG_DAY = 2.4
@@ -64,6 +64,13 @@ def validate_situations(situations):
                         raise ValueError(f"Event '{sid}': unknown module '{m}'")
             elif isinstance(rule, dict) and not set(rule) <= {"min", "max"}:
                 raise ValueError(f"Event '{sid}': requirement '{key}' only accepts 'min' and 'max'")
+        info = s.get("nasa")
+        if info is not None:
+            if info.get("kind") not in NASA_KINDS:
+                raise ValueError(f"Event '{sid}': nasa.kind must be one of {NASA_KINDS}")
+            for key in ("fact", "source"):
+                if not info.get(key):
+                    raise ValueError(f"Event '{sid}': nasa.{key} is missing")
         for answer in ("yes", "no"):
             opt = s[answer]
             for fx in (opt["effects"], (opt.get("risk") or {}).get("effects", {})):
@@ -250,6 +257,7 @@ class MarsGameManager:
             "index": s["index"], "id": s["id"], "tag": s["tag"], "title": s["title"],
             "description": s["description"], "period": period, "period_label": PERIOD_LABELS[period],
             "options": {"yes": s["yes"]["label"], "no": s["no"]["label"]},
+            "nasa": s.get("nasa"),  # real-world basis (kind, fact, source, url) or None
         }
 
     def get_next_situation(self):
