@@ -123,6 +123,8 @@ function playButtonSound3() {
         "background:transparent;color:var(--text);font-size:1.5rem;line-height:1;cursor:pointer;}",
         ".nasa-close:hover,.nasa-close:focus-visible{background:rgba(255,255,255,.14);outline:none;}"
     ].join("");
+    const CREW_CSS = ".astro-name{display:block;max-width:7rem;margin-top:.3rem;color:var(--muted);font-size:.68rem;"
+        + "line-height:1.15;text-align:center;overflow-wrap:anywhere;}";
     const nasaUI = { badge: null, modal: null, lastFocus: null };
 
     // Only plain http(s) links coming from the server are ever opened.
@@ -139,7 +141,7 @@ function playButtonSound3() {
 
     function initNasaPanel() {
         const style = h("style");
-        style.textContent = NASA_CSS;
+        style.textContent = NASA_CSS + CREW_CSS;
         document.head.appendChild(style);
 
         const badge = h("button", "nasa-badge");
@@ -281,9 +283,9 @@ function playButtonSound3() {
         return e;
     }
 
-    function makeAstronaut(status, n) {
+    function makeAstronaut(status, n, member) {
         const wrap = h("div", "astro " + status);
-        wrap.title = "Crew member " + n;
+        wrap.title = member ? member.name + " \u00b7 " + member.agency + " (" + member.country + ")" : "Crew member " + n;
         const fig = div("astronaut-figure", wrap);
         div("astronaut-backpack", fig);
         div("astronaut-ear left", fig);
@@ -304,17 +306,30 @@ function playButtonSound3() {
     }
 
     function worstStatus(d) {
-        const all = d.resources.map(function (r) { return r.status; }).concat([d.power.status, d.structure.status]);
+        const all = d.resources.map(function (r) { return r.status; }).concat([d.power.status, d.structure.status, d.crew ? d.crew.status : "ok"]);
         return all.indexOf("crit") >= 0 ? "crit" : all.indexOf("warn") >= 0 ? "warn" : "ok";
     }
 
+    function stressNote(c) {
+        const text = c.stress < 40 ? "The crew is calm" : c.stress < 70 ? "Tension is building" : "The crew is close to breaking";
+        const extra = [];
+        if (c.science_factor < 1) extra.push("science \u00d7" + c.science_factor.toFixed(2));
+        if (c.risk_factor > 1.15) extra.push("incident risk \u00d7" + c.risk_factor.toFixed(2));
+        return extra.length ? text + " \u00b7 " + extra.join(", ") : text;
+    }
+
     function renderCrew(d) {
-        const n = BOOT.crewSize;
+        const crew = d.crew || null;
+        const members = crew && crew.members && crew.members.length ? crew.members : null;
+        const n = members ? members.length : BOOT.crewSize;
         const s = section("Crew · " + n + (n === 1 ? " member" : " members"));
         const dock = h("div", "crew");
         const st = worstStatus(d);
-        for (let i = 1; i <= n; i++) dock.appendChild(makeAstronaut(st, i));
+        for (let i = 0; i < n; i++) dock.appendChild(makeAstronaut(st, i + 1, members ? members[i] : null));
         s.appendChild(dock);
+        if (crew) {
+            s.appendChild(barRow(crew.status, "Crew stress", Math.round(crew.stress) + " / 100", crew.stress, stressNote(crew)));
+        }
         return s;
     }
 
@@ -341,7 +356,8 @@ function playButtonSound3() {
             g.appendChild(h("div", "label", title));
             const box = h("div", "chg");
             list.forEach(function (c) {
-                const chip = h("span", "chg-item " + (c.delta > 0 ? "up" : "down"));
+                const good = c.invert ? c.delta < 0 : c.delta > 0;  // stress: a rise is bad
+                const chip = h("span", "chg-item " + (good ? "up" : "down"));
                 chip.append(h("span", "arrow", c.delta > 0 ? "▲" : "▼"), h("span", "", c.label), h("b", "", fmtDelta(c)));
                 box.appendChild(chip);
             });
@@ -374,8 +390,13 @@ function playButtonSound3() {
 
         const sys = section("Power and structure");
         const p = d.power;
+        const loads = (p.loads || []).map(function (l) {
+            return l.source + " " + (l.kwe > 0 ? "+" : "\u2212") + Math.abs(l.kwe) + " kWe (" + l.sols_left + (l.sols_left === 1 ? " sol" : " sols") + ")";
+        });
         sys.appendChild(barRow(p.status, "Power balance", (p.net >= 0 ? "+" : "") + p.net + " kWe",
-            100 * Math.min(1, p.supply / p.demand), p.supply + " kWe supply / " + p.demand + " kWe demand · solar " + p.solar_output + " kWe"));
+            100 * Math.min(1, p.supply / p.demand),
+            p.supply + " kWe supply / " + p.demand + " kWe demand · solar " + p.solar_output + " kWe"
+                + (loads.length ? " · event loads: " + loads.join(", ") : "")));
         sys.appendChild(barRow(d.structure.status, "Habitat structure", d.structure.integrity + "%", d.structure.integrity,
             d.structure.status === "ok" ? "" : "Repair the habitat before the next incident"));
         root.appendChild(sys);
