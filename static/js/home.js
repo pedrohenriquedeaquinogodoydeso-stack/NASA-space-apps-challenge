@@ -1,5 +1,5 @@
 /*
-  Mars Mission - Home page (index.html)
+  Humanity’s Future Is Red - Home page (index.html)
   Presents the project and links to the planning page.
 
   Parts of this file were written with AI assistance (Gemini, Claude)
@@ -201,7 +201,7 @@ function Home() {
             }, "Plan it. Launch it. Survive it."),
             h("p", {
                 style: { maxWidth: "680px", margin: "0 0 32px", color: colors.muted, fontSize: "15px", lineHeight: 1.8 }
-            }, "Mars Mission is an interactive simulation created for the NASA Space Apps Challenge. First you design a crewed mission to Mars on the planning screen. Then you take command of it, managing resources and facing the unexpected."),
+            }, "Humanity’s Future Is Red is an interactive simulation created for the NASA Space Apps Challenge. First you design a crewed mission to Mars on the planning screen. Then you take command of it, managing resources and facing the unexpected."),
             h("div", { style: { display: "flex", flexWrap: "wrap", gap: "16px" } },
                 aboutCards.map(function (card) {
                     return h("div", {

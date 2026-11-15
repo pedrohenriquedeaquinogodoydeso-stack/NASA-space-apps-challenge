@@ -1,5 +1,5 @@
 /*
-  Mars Mission - Shared frontend code
+  Humanity’s Future Is Red - Shared frontend code
   Styles, header and footer used by both the home page (index.html)
   and the planning page (planning.html).
 
@@ -102,7 +102,7 @@ function SiteFooter() {
                 gap: "10px"
             })
         },
-            h("span", null, "NASA SPACE APPS CHALLENGE · MARS MISSION"),
+            h("span", null, "NASA SPACE APPS CHALLENGE · HUMANITY’S FUTURE IS RED"),
             h("span", null, "ONE SMALL STEP TOWARD YOUR NEXT GREAT MISSION")
         );
 }

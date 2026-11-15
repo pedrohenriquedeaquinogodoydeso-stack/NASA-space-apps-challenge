@@ -1,5 +1,5 @@
 /*
-  Mars Mission - Mission sidebar
+  Humanity’s Future Is Red - Mission sidebar
   Fixed side panel with the mission configuration. Used by planning.html (live
   preview while the player configures the mission) and game.html (read-only
   reminder of the launch setup while the player is playing).

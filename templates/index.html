@@ -1,21 +1,476 @@
 <!-- Parts of this file were written with AI assistance (Gemini, Claude) -->
-
+<!-- Landing page: explains the NASA challenge, what the game is and how it solves the problem.
+     Self-contained (inline CSS + JS). Only external request: Google Fonts, with system fallbacks. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#070b16">
-    <meta name="description" content="Plan a mission to Mars in the NASA Space Apps Challenge.">
+    <meta name="theme-color" content="#2a1904">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Run a Martian outpost. Balance life support, power, radiation and food, and find out whether your crew survives. Built for the NASA Space Apps Challenge.">
     <title>Humanity’s Future Is Red | NASA Space Apps Challenge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;800;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ---------- Design tokens (same palette family as the game screens) ---------- */
+        :root {
+            --soil: #2a1904;
+            --soil-deep: #1e1103;
+            --dust: #3a2406;
+            --rust: #ff764a;
+            --cyan: #70e1e8;
+            --green: #56e39f;
+            --red: #ff6b6b;
+            --text: #f4ede4;
+            --muted: #bba995;
+            --line: rgba(244, 237, 228, 0.14);
+            --head: "Archivo", "Helvetica Neue", Arial, sans-serif;
+            --body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            background: var(--soil);
+            color: var(--text);
+            font: 400 16px/1.7 var(--body);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            * { transition: none !important; }
+        }
+
+        a { color: var(--cyan); }
+        :focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+
+        .wrap { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
+        section { padding: 84px 0; border-top: 1px solid var(--line); }
+        h1, h2, h3 { font-family: var(--head); margin: 0; line-height: 1.05; }
+        h2 { font-size: clamp(30px, 4.4vw, 48px); font-weight: 800; letter-spacing: -1.2px; max-width: 18ch; }
+        h3 { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; }
+        p { margin: 0 0 16px; max-width: 62ch; }
+        .muted { color: var(--muted); }
+
+        .btn {
+            display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px;
+            border-radius: 4px; border: 0; background: var(--rust); color: #1b0d07;
+            font: 800 15px var(--body); text-decoration: none; cursor: pointer;
+        }
+        .btn:hover { background: #ff8a63; }
+
+        /* ---------- Hero ---------- */
+        .hero { padding: 72px 0 88px; border-top: 0; }
+        .hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: clamp(48px, 8vw, 112px); align-items: center; }
+        .hero h1 { font-size: clamp(48px, 7.5vw, 96px); font-weight: 900; letter-spacing: -2px; line-height: 1.04; }
+        .hero h1 .red { color: var(--rust); }
+        .lede { margin: 36px 0 40px; font-size: 18px; color: var(--muted); }
+        .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; }
+        .hero-actions a.plain { color: var(--text); }
+
+
+        /* ---------- Hero image ---------- */
+        .hero-art { position: relative; display: flex; justify-content: center; align-items: center; }
+        .hero-art .ring {
+            position: absolute; width: min(420px, 90%); aspect-ratio: 1; border-radius: 50%;
+            border: 1px solid rgba(112, 225, 232, 0.16);
+            box-shadow: 0 0 0 35px rgba(112, 225, 232, 0.03), 0 0 0 75px rgba(112, 225, 232, 0.02);
+        }
+        .hero-art img { position: relative; display: block; width: min(100%, 430px); height: auto; object-fit: contain; filter: drop-shadow(0 22px 50px rgba(0, 0, 0, 0.45)); }
+        .hero-art .badge { position: absolute; right: 0; bottom: 8%; padding: 13px 17px; border: 1px solid var(--line); border-radius: 4px; background: rgba(30, 17, 3, 0.85); backdrop-filter: blur(10px); }
+        .hero-art .badge-label { display: block; color: var(--cyan); font-size: 12px; font-weight: 700; }
+        .hero-art .badge strong { display: block; margin-top: 2px; font-size: 14px; }
+
+        /* ---------- Try-a-decision section ---------- */
+        .try-grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: clamp(40px, 7vw, 96px); align-items: start; }
+
+        /* ---------- Try-a-decision widget ---------- */
+        .demo { border: 1px solid var(--line); background: var(--soil-deep); padding: 34px; }
+        .demo h3 { font-size: 22px; }
+        .demo .scene { margin: 14px 0 26px; color: var(--muted); font-size: 15px; }
+        .meter { display: grid; grid-template-columns: 124px 1fr 74px; gap: 14px; align-items: center; padding: 9px 0; font-size: 13px; }
+        .meter .bar { height: 8px; background: rgba(244, 237, 228, 0.1); overflow: hidden; }
+        .meter .fill { height: 100%; width: 0; background: var(--green); transition: width .45s ease, background-color .3s ease; }
+        .meter .fill.bad { background: var(--red); }
+        .meter .fill.warn { background: var(--rust); }
+        .meter .val { text-align: right; font-variant-numeric: tabular-nums; }
+        .meter .delta { display: block; min-height: 1em; font-size: 11px; color: var(--cyan); }
+        .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 30px 0 0; }
+        .choice {
+            text-align: left; padding: 14px 16px; border: 1px solid var(--line); background: transparent;
+            color: var(--text); font: 500 14px/1.45 var(--body); cursor: pointer;
+        }
+        .choice:hover:not(:disabled) { border-color: var(--rust); }
+        .choice:disabled { cursor: default; opacity: .45; }
+        .choice.picked { opacity: 1; border-color: var(--rust); }
+        .choice strong { display: block; margin-bottom: 4px; font-size: 15px; }
+        .choice small { color: var(--muted); font-size: 12px; }
+        .outcome { min-height: 88px; margin-top: 24px; font-size: 14px; }
+        .outcome .incident { color: var(--red); font-weight: 700; }
+        .reset { margin-top: 6px; padding: 0; border: 0; background: none; color: var(--cyan); font: 700 13px var(--body); text-decoration: underline; cursor: pointer; }
+        .demo-note { margin: 14px 0 0; font-size: 12px; color: var(--muted); }
+
+        /* ---------- Challenge ---------- */
+        .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; margin-top: 40px; }
+        blockquote { margin: 0; padding-left: 22px; border-left: 3px solid var(--rust); font-size: 17px; line-height: 1.75; }
+        blockquote cite { display: block; margin-top: 14px; font-size: 13px; font-style: normal; color: var(--muted); }
+        .gap-list { margin: 0; padding: 0; list-style: none; }
+        .gap-list li { padding: 0 0 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+        .gap-list li:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+        .gap-list strong { display: block; font-family: var(--head); font-size: 19px; font-weight: 800; }
+
+        /* ---------- Plan / Launch / Survive (a real sequence, so numbered) ---------- */
+        .steps { list-style: none; margin: 44px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; counter-reset: step; }
+        .steps li { counter-increment: step; padding-top: 18px; border-top: 3px solid var(--rust); }
+        .steps li::before { content: counter(step); display: block; margin-bottom: 8px; font: 900 44px/1 var(--head); color: var(--rust); }
+        .steps h3 { margin-bottom: 10px; }
+        .steps p { font-size: 15px; color: var(--muted); }
+
+        /* ---------- Trade-off table ---------- */
+        .table-scroll { overflow-x: auto; margin-top: 36px; }
+        table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+        th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+        th { font-weight: 700; color: var(--muted); font-size: 13px; }
+        td:first-child { font-family: var(--head); font-weight: 800; font-size: 17px; }
+        td.best { color: var(--green); font-weight: 700; }
+        td.worst { color: var(--red); font-weight: 700; }
+        .caption { margin-top: 18px; font-size: 14px; color: var(--muted); }
+
+        /* ---------- Demands to mechanics ---------- */
+        dl.map { margin: 40px 0 0; display: grid; grid-template-columns: 220px 1fr; border-top: 1px solid var(--line); }
+        dl.map dt, dl.map dd { margin: 0; padding: 20px 0; border-bottom: 1px solid var(--line); }
+        dl.map dt { font-family: var(--head); font-weight: 800; font-size: 20px; padding-right: 20px; }
+        dl.map dd { color: var(--muted); max-width: 70ch; }
+
+        /* ---------- Real data ---------- */
+        .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; margin-top: 36px; }
+        .facts p { color: var(--muted); font-size: 15px; }
+
+        /* ---------- Final call to action ---------- */
+        .final { text-align: left; }
+        .final h2 { max-width: 14ch; margin-bottom: 26px; }
+        footer { padding: 28px 0 44px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+        footer p { margin: 0; max-width: none; }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 900px) {
+            section { padding: 64px 0; }
+            .hero-grid, .try-grid { grid-template-columns: 1fr; gap: 56px; }
+            .split, .steps, .facts { grid-template-columns: 1fr; gap: 36px; }
+            dl.map { grid-template-columns: 1fr; }
+            dl.map dt { padding: 20px 0 4px; border-bottom: 0; }
+            dl.map dd { padding: 0 0 20px; }
+        }
+        @media (max-width: 520px) {
+            .wrap { width: calc(100% - 32px); }
+            .choices { grid-template-columns: 1fr; }
+            .meter { grid-template-columns: 100px 1fr 62px; }
+            .demo { padding: 22px; }
+        }
+    </style>
 </head>
-<body style="margin: 0; background: #070b16;">
-    <div id="root"></div>
+<body>
+    <main>
+        <!-- ================= HERO ================= -->
+        <header class="hero">
+            <div class="wrap hero-grid">
+                <div>
+                    <h1>Humanity’s future <span class="red">is red.</span></h1>
+                    <p class="lede">Design a crewed mission to Mars, then run the outpost sol by sol. Every choice for power, air, water, food and safety costs something somewhere else. Plan it. Launch it. Survive it.</p>
+                    <div class="hero-actions">
+                        <a class="btn" href="/planning">Start planning</a>
+                        <a class="plain" href="#challenge">Why we built this</a>
+                    </div>
+                </div>
 
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+                <!-- Hero image: astronaut on Mars, with the destination badge -->
+                <div class="hero-art">
+                    <div class="ring" aria-hidden="true"></div>
+                    <img src="static/imgs/astronaut_front.png"
+                         alt="An astronaut in a spacesuit, standing on the surface of Mars, with the planet’s red landscape and a distant horizon in the background.">
+                    <div class="badge">
+                        <span class="badge-label">Destination</span>
+                        <strong>Mars · 225 million km</strong>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+        <!-- ================= TRY A DECISION ================= -->
+        <section class="try" aria-labelledby="try-title">
+            <div class="wrap try-grid">
+                <div>
+                    <h2 id="try-title">Every sol is a trade-off</h2>
+                    <p class="muted" style="margin-top:20px">Once you land, the crew faces decisions like this one: morning, afternoon and night. Each choice has a cost you can see and a risk you can’t. Try it before you plan your mission.</p>
+                </div>
+                <div class="demo" id="demo" aria-labelledby="demo-title">
+                    <h3 id="demo-title">Try one decision</h3>
+                    <p class="scene">Sol 112, morning. Dust has settled on the solar array and output is falling. Do you send someone outside to clean it?</p>
+
+                    <div class="meter"><span>Solar efficiency</span><div class="bar"><div class="fill" id="m-solar"></div></div><span class="val"><span id="v-solar"></span><span class="delta" id="d-solar"></span></span></div>
+                    <div class="meter"><span>Habitat integrity</span><div class="bar"><div class="fill" id="m-integrity"></div></div><span class="val"><span id="v-integrity"></span><span class="delta" id="d-integrity"></span></span></div>
+                    <div class="meter"><span>Crew stress</span><div class="bar"><div class="fill" id="m-stress"></div></div><span class="val"><span id="v-stress"></span><span class="delta" id="d-stress"></span></span></div>
+                    <div class="meter"><span>Science points</span><div class="bar"><div class="fill" id="m-science"></div></div><span class="val"><span id="v-science"></span><span class="delta" id="d-science"></span></span></div>
+
+                    <div class="choices">
+                        <button class="choice" type="button" data-choice="yes">
+                            <strong>Yes, suit up</strong>
+                            <small>Solar +0.15, stress +3. A 30% chance of a suit tear.</small>
+                        </button>
+                        <button class="choice" type="button" data-choice="no">
+                            <strong>No, keep drilling</strong>
+                            <small>Solar −0.05, science +6. No extra risk.</small>
+                        </button>
+                    </div>
+                    <div class="outcome" id="outcome" aria-live="polite"></div>
+                    <p class="demo-note">A simplified example of the decisions you face in the game, not a real game event.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= THE CHALLENGE ================= -->
+        <section id="challenge" aria-labelledby="challenge-title">
+            <div class="wrap">
+                <h2 id="challenge-title">The problem we are solving</h2>
+                <div class="split">
+                    <div>
+                        <blockquote>
+                            Design and build an interactive game or app that lets students run a lunar or Martian outpost, balancing competing demands like life support, radiation shielding, power, and food production, so they experience firsthand the decisions that determine whether a mission fails or succeeds.
+                            <cite>NASA Space Apps Challenge</cite>
+                        </blockquote>
+                    </div>
+                    <ul class="gap-list">
+                        <li><strong>Too simple</strong>Space content often hides the engineering trade-offs, so a mission looks like a matter of pressing “go”.</li>
+                        <li><strong>Too complex</strong>Real mission tools show the trade-offs, but at a level that loses a young learner in the first minute.</li>
+                        <li><strong>Not tangible</strong>Few tools let students feel a trade-off: give up something now, and watch what it costs ninety sols later.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= HOW WE SOLVE IT ================= -->
+        <section aria-labelledby="solve-title">
+            <div class="wrap">
+                <h2 id="solve-title">What we built: a Mars mission in three steps</h2>
+                <ol class="steps">
+                    <li>
+                        <h3>Plan it</h3>
+                        <p>Pick a landing site, a rocket, a crew size and a mission length. Choose which modules fit in the payload. A live telemetry panel shows mass, power and total consumables as you change each setting.</p>
+                    </li>
+                    <li>
+                        <h3>Launch it</h3>
+                        <p>Your setup decides what the crew starts with. A four-person, 500-sol mission needs about 1,670 kg of oxygen, 5,000 L of water and 3,600 kg of food. The lander carries 500 kg, 1,500 L and 800 kg. The gap has to be closed by recycling, growing and making resources on site.</p>
+                    </li>
+                    <li>
+                        <h3>Survive it</h3>
+                        <p>Each sol brings three yes/no decisions: morning, afternoon and night. Then the day’s consumption is deducted. Stress makes science slower and incidents more likely. Your score is science points, collected while the crew stays alive.</p>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- ================= TRADE-OFFS ================= -->
+        <section aria-labelledby="tradeoff-title">
+            <div class="wrap">
+                <h2 id="tradeoff-title">No landing site is best at everything</h2>
+                <p class="muted" style="margin-top:20px">The first trade-off is the map. Each site changes how much science you earn and how hard your hardware has to work. Values below are taken straight from the game.</p>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">Site</th>
+                                <th scope="col">Science multiplier</th>
+                                <th scope="col">Solar efficiency</th>
+                                <th scope="col">Dust wear</th>
+                                <th scope="col">Water ice</th>
+                                <th scope="col">Radiation (mSv/day)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Jezero Crater</td><td>1.5×</td><td>1.00</td><td>1.00×</td><td>No</td><td>0.64</td></tr>
+                            <tr><td>Arcadia Planitia</td><td>1.0×</td><td>0.75</td><td class="best">0.80×</td><td class="best">Yes</td><td>0.64</td></tr>
+                            <tr><td>Gale Crater</td><td>1.3×</td><td class="best">1.15</td><td class="worst">1.35×</td><td>No</td><td>0.64</td></tr>
+                            <tr><td>Valles Marineris</td><td class="best">1.8×</td><td class="worst">0.65</td><td>1.10×</td><td>No</td><td class="best">0.48</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="caption">Valles Marineris pays the most science and shields the crew best, but its canyon walls cut solar power and radio contact. Arcadia has water ice but the least science. Then there is the payload: all four optional modules weigh 5,500 kg, but only 2,800 kg of modules fit.</p>
+            </div>
+        </section>
+
+        <!-- ================= CHALLENGE DEMANDS -> GAME MECHANICS ================= -->
+        <section aria-labelledby="map-title">
+            <div class="wrap">
+                <h2 id="map-title">Every demand in the challenge is a lever in the game</h2>
+                <dl class="map">
+                    <dt>Life support</dt>
+                    <dd>Oxygen, water and food drop every sol. The water recycler recovers up to 93% of wastewater, but only while it has enough power.</dd>
+                    <dt>Power</dt>
+                    <dd>Three Kilopower units cover the base habitat. Every module you add draws more, solar output fades as dust builds up, and a deficit wears down the habitat.</dd>
+                    <dt>Radiation shielding</dt>
+                    <dd>Your landing site sets the daily dose, and some sites shield you naturally. Solar-flare alerts can still spike it, so a wrong call costs structure and nerves.</dd>
+                    <dt>Food production</dt>
+                    <dd>The greenhouse grows food and adds oxygen, but it is the heaviest module and needs 15 kWe for lights and heat. The MOXIE unit makes oxygen from the Martian air for 20 kWe.</dd>
+                    <dt>Fail or succeed</dt>
+                    <dd>The mission fails if oxygen, water or food reach zero, if the habitat breaks, or if the crew’s stress hits its limit. It succeeds only if everyone survives all the sols you planned.</dd>
+                </dl>
+            </div>
+        </section>
+
+        <!-- ================= REAL DATA ================= -->
+        <section aria-labelledby="real-title">
+            <div class="wrap">
+                <h2 id="real-title">Real numbers, real missions</h2>
+                <div class="facts">
+                    <div>
+                        <h3>NASA reference values</h3>
+                        <p>Each astronaut needs 0.835 kg of oxygen, 2.5 L of water and 1.8 kg of food per day, following NASA-STD-3001. Power, mass and rocket figures come from Mars Design Reference Architecture 5.0 and the Kilopower project.</p>
+                    </div>
+                    <div>
+                        <h3>Real events</h3>
+                        <p>Many situations retell what really happened on Mars, such as the 2018 dust storm that silenced the Opportunity rover and the solar-conjunction blackout when Earth cannot hear Mars.</p>
+                    </div>
+                    <div>
+                        <h3>Sources you can check</h3>
+                        <p>Each situation is tagged as a real event, real data or an analog built on real numbers. The ones with a real basis show a badge and a source link while you play.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= FINAL CALL TO ACTION ================= -->
+        <section class="final" aria-labelledby="final-title">
+            <div class="wrap">
+                <h2 id="final-title">Ready to run your outpost?</h2>
+                <a class="btn" href="/planning">Start planning</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="wrap">
+            <p>Created for the NASA Space Apps Challenge. This is an educational simulation and is not affiliated with NASA.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Interactive "Try one decision" widget. Mirrors the real mechanic in a simplified way:
+        //  1. The effects of the chosen option are always applied.
+        //  2. If the option has a risk, the game rolls once; stress raises the chance:
+        //     real chance = min(0.95, chance * (1 + 0.5 * stress / 100)).
+        (function () {
+            var START = { solar: 0.85, integrity: 100, stress: 30, science: 0 };
+            var LIMITS = { solar: [0.4, 2.0], integrity: [0, 100], stress: [0, 100], science: [0, 30] };
+            var OPTIONS = {
+                yes: {
+                    effects: { solar: 0.15, stress: 3 },
+                    text: "The panels are clear and power output climbs.",
+                    risk: { chance: 0.30, text: "A suit tears on a sharp panel edge.", effects: { integrity: -5, stress: 8 } }
+                },
+                no: {
+                    effects: { solar: -0.05, science: 6 },
+                    text: "The crew spends the day on the drill. Dust keeps building on the array.",
+                    risk: null
+                }
+            };
+
+            var state = {};
+            var locked = false;
+            var outcome = document.getElementById("outcome");
+            var buttons = document.querySelectorAll(".choice");
+
+            function clamp(value, key) {
+                return Math.min(LIMITS[key][1], Math.max(LIMITS[key][0], value));
+            }
+
+            function format(key, value) {
+                if (key === "solar") { return value.toFixed(2) + "×"; }
+                if (key === "integrity") { return Math.round(value) + "%"; }
+                return String(Math.round(value));
+            }
+
+            function formatDelta(key, delta) {
+                if (Math.abs(delta) < 0.001) { return ""; }
+                var sign = delta > 0 ? "+" : "−";
+                var amount = Math.abs(delta);
+                return sign + (key === "solar" ? amount.toFixed(2) : String(Math.round(amount)));
+            }
+
+            // Draw the four meters. `before` is optional and is used to show the change after a decision.
+            function render(before) {
+                Object.keys(START).forEach(function (key) {
+                    var span = LIMITS[key][1] - LIMITS[key][0];
+                    var pct = ((state[key] - LIMITS[key][0]) / span) * 100;
+                    var fill = document.getElementById("m-" + key);
+                    fill.style.width = pct + "%";
+                    fill.className = "fill";
+                    if (key === "stress") { fill.className += state[key] >= 70 ? " bad" : state[key] >= 40 ? " warn" : ""; }
+                    if (key === "integrity") { fill.className += state[key] < 30 ? " bad" : state[key] < 60 ? " warn" : ""; }
+                    document.getElementById("v-" + key).textContent = format(key, state[key]);
+                    document.getElementById("d-" + key).textContent = before ? formatDelta(key, state[key] - before[key]) : "";
+                });
+            }
+
+            function apply(effects) {
+                Object.keys(effects).forEach(function (key) {
+                    state[key] = clamp(state[key] + effects[key], key);
+                });
+            }
+
+            function reset() {
+                locked = false;
+                state = Object.assign({}, START);
+                buttons.forEach(function (button) {
+                    button.disabled = false;
+                    button.classList.remove("picked");
+                });
+                outcome.textContent = "";
+                render(null);
+            }
+
+            function choose(id) {
+                if (locked) { return; }
+                locked = true;
+                var option = OPTIONS[id];
+                var before = Object.assign({}, state);
+                var html = "<p>" + option.text + "</p>";
+
+                apply(option.effects);
+
+                if (option.risk) {
+                    var chance = Math.min(0.95, option.risk.chance * (1 + 0.5 * state.stress / 100));
+                    var hit = Math.random() < chance;
+                    html += "<p class=\"muted\">Risk roll: " + Math.round(option.risk.chance * 100) + "% base, " +
+                            Math.round(chance * 100) + "% at your current stress. ";
+                    if (hit) {
+                        apply(option.risk.effects);
+                        html += "</p><p class=\"incident\">Incident: " + option.risk.text + "</p>";
+                    } else {
+                        html += "No incident this time.</p>";
+                    }
+                }
+
+                html += "<button type=\"button\" class=\"reset\" id=\"reset\">Try again</button>";
+                outcome.innerHTML = html;
+                buttons.forEach(function (button) {
+                    button.disabled = true;
+                    button.classList.toggle("picked", button.getAttribute("data-choice") === id);
+                });
+                render(before);
+                document.getElementById("reset").addEventListener("click", function () {
+                    reset();
+                    buttons[0].focus();
+                });
+            }
+
+            buttons.forEach(function (button) {
+                button.addEventListener("click", function () { choose(button.getAttribute("data-choice")); });
+            });
+
+            reset();
+        })();
+    </script>
 </body>
 </html>

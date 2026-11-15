@@ -1,5 +1,5 @@
 /*
-  Mars Mission - Mission sidebar on the game page (game.html)
+  Humanity’s Future Is Red - Mission sidebar on the game page (game.html)
   Mounts the shared MissionSidebar (mission-sidebar.js) with the setup chosen
   on the planning screen, so the player can check it while playing.
   Loaded after game.js: if it fails, the game itself keeps working.
