@@ -4,6 +4,9 @@
 # In here is gona be calculated the loadout for the mission, based on the constants and the landing site selected.
 # The player choice number of crew members, landing site, modules ......
 #
+# 
+# Parts of this file were written with AI assistance (Gemini, Claude)
+#############################
 
 from src.constants import NASA_CONSTANTS, MODULES, ROCKET_ARCHITECTURES, MARS_SITES
 from dataclasses import dataclass

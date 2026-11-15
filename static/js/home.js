@@ -1,6 +1,8 @@
 /*
   Mars Mission - Home page (index.html)
   Presents the project and links to the planning page.
+
+  Parts of this file were written with AI assistance (Gemini, Claude)
 */
 
 const highlights = [

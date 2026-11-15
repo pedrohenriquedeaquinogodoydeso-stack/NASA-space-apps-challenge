@@ -2,6 +2,8 @@
   Mars Mission - Shared frontend code
   Styles, header and footer used by both the home page (index.html)
   and the planning page (planning.html).
+
+  Parts of this file were written with AI assistance (Gemini, Claude)
 */
 
 const h = React.createElement;
@@ -82,7 +84,7 @@ function SiteHeader() {
                 }
             }, "MISSION CONTROL", h("br"), h("span", {
                 style: { color: colors.muted, fontWeight: 500, letterSpacing: "1px" }
-            }, "MISSION MARS // 2045"))
+            }, "Humanity’s Future Is Red"))
         );
 }
 

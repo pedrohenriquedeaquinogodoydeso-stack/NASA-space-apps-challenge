@@ -3,6 +3,8 @@
   Mounts the shared MissionSidebar (mission-sidebar.js) with the setup chosen
   on the planning screen, so the player can check it while playing.
   Loaded after game.js: if it fails, the game itself keeps working.
+
+  Parts of this file were written with AI assistance (Gemini, Claude)
 */
 (function () {
     "use strict";

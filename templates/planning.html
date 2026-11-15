@@ -1,3 +1,5 @@
+<!-- Parts of this file were written with AI assistance (Gemini, Claude) -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,7 +29,7 @@
         }
 
         #root.launch-shake {
-            animation: launch-screen-shake 700ms ease-in-out;
+            animation: launch-screen-shake 700ms ease-in-out infinite;
         }
 
         #root.launch-final {
@@ -56,8 +58,6 @@
 </head>
 <body style="margin: 0; background: #070b16;">
     <div id="root"></div>
-
-    <!-- Dados injetados pelo Flask via Jinja2 -->
     <script id="mission-bootstrap" type="application/json">
         {{ {
             "nasaConstants": nasa_constants,
@@ -69,11 +69,9 @@
         } | tojson }}
     </script>
 
-    <!-- React e ReactDOM via CDN -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
-    <!-- Código compartilhado (estilos, header e footer) + sidebar de telemetria + página de planejamento -->
     <script src="{{ url_for('static', filename='js/common.js') }}"></script>
     <script src="{{ url_for('static', filename='js/mission-sidebar.js') }}"></script>
     <script src="{{ url_for('static', filename='js/planning.js') }}"></script>

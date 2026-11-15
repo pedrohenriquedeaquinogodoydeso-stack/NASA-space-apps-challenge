@@ -1,6 +1,8 @@
 /*
   Mars Mission Planner - Frontend Application Logic
   Handles user interface interactions, telemetry updates, and API communications.
+
+  Parts of this file were written with AI assistance (Gemini, Claude)
 */
 
 const h = React.createElement;
@@ -906,7 +908,7 @@ function App() {
                 }
             }, "MISSION CONTROL", h("br"), h("span", {
                 style: { color: colors.muted, fontWeight: 500, letterSpacing: "1px" }
-            }, "MISSION MARS // 2045"))
+            }, "Humanity’s Future Is Red"))
         ),
 
         screen === "landing" ? h(React.Fragment, null,

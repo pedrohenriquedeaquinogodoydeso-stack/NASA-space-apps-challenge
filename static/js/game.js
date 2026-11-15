@@ -1,6 +1,8 @@
 /*
   Mars survival phase - front-end logic.
   Talks to POST /game/situation and renders the two dashboards.
+
+  Parts of this file were written with AI assistance (Gemini, Claude)
 */
 function playButtonSound3() {
     const sound = new Audio("/static/music/page.mp3");

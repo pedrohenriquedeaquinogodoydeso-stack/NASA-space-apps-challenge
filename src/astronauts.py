@@ -10,6 +10,8 @@
 # - People who died in flight accidents are intentionally NOT listed, since
 #   crews can be lost in the game.
 # - Extend the list freely: add a (name, agency, country) tuple to ROSTER.
+# 
+# Parts of this file were written with AI assistance (Gemini, Claude)
 ##################################
 
 AGENCIES = {

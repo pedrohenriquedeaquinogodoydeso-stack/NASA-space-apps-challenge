@@ -2,6 +2,8 @@
   Mars Mission - Planning page (planning.html)
   Mission configuration: landing site, rocket, modules, crew and duration.
   Depends on common.js, mission-sidebar.js and on the data injected by Flask (#mission-bootstrap).
+
+  Parts of this file were written with AI assistance (Gemini, Claude)
 */
 
 const BOOTSTRAP = JSON.parse(document.getElementById("mission-bootstrap").textContent);
@@ -65,7 +67,6 @@ function PlanningApp() {
         NASA_CONSTANTS.INITIAL_WATER_L +
         NASA_CONSTANTS.INITIAL_FOOD_KG;
 
-    // Fetch dynamic loadout calculations from backend when parameters change
     React.useEffect(function () {
         let cancelled = false;
         fetch("/api/preview_loadout", {
@@ -133,7 +134,6 @@ function PlanningApp() {
                 }
             }, "← BACK TO OVERVIEW"),
 
-            // Ares V rocket banner displayed at the top of the planning screen
             h("div", {
                 style: {
                     display: "flex",
@@ -186,7 +186,6 @@ function PlanningApp() {
                 }, "Configure your landing site, rocket propulsion architecture, surface payload modules, and crew before launch.")
             ),
 
-            // Top section: Map & Crew Size
             h("div", {
                 style: {
                     display: "flex",
@@ -325,7 +324,7 @@ function PlanningApp() {
                         }),
                         h("span", null, "WARMER")
                     ),
-                    // Landing site details card
+
                     h("div", {
                         style: {
                             marginTop: "18px",
@@ -386,7 +385,6 @@ function PlanningApp() {
                     )
                 ),
 
-                // Crew Size (the mission telemetry lives in the fixed MissionSidebar)
                 h("aside", {
                     style: {
                         flex: "1 1 300px",
@@ -503,7 +501,6 @@ function PlanningApp() {
                 )
             ),
 
-            // Rocket Architecture Selection Section
             h("section", {
                 style: {
                     marginTop: "24px",
@@ -594,7 +591,6 @@ function PlanningApp() {
                 )
             ),
 
-            // Surface Modules Selection Section
             h("section", {
                 style: {
                     marginTop: "24px",
@@ -723,7 +719,6 @@ function PlanningApp() {
                 )
             ),
 
-            // Bottom section featuring the launch rocket image and "3... 2... 1... LAUNCH!" button
             h("div", {
                 style: {
                     marginTop: "32px",
@@ -738,7 +733,7 @@ function PlanningApp() {
                 }
             },
                 h("img", {
-                    src: "/static/imgs/ares_v_lancamento.png",
+                    src: "/static/imgs/ares_v_launching.png",
                     alt: "Ares V Rocket Launch Pixel Art",
                     style: {
                         width: "110px",
@@ -841,7 +836,7 @@ function PlanningApp() {
                         textDecoration: "none",
                         boxShadow: "0 10px 30px rgba(255, 118, 74, .25)"
                     }
-                }, "3... 2... 1... LAUNCH!", h("span", { "aria-hidden": "true", style: { fontSize: "18px" } }, "→"))
+                }, "5... 4... 3... 2... 1... LAUNCH!", h("span", { "aria-hidden": "true", style: { fontSize: "18px" } }, "→"))
             )
         );
     }

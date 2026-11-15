@@ -17,6 +17,8 @@
       baselines,          // { o2, water, food } per person per day
       radiationMsvDay
   }
+
+  Parts of this file were written with AI assistance (Gemini, Claude)
 */
 
 const SIDEBAR_WIDTH = 320;

@@ -4,6 +4,8 @@
 # This file contains constants used throughout the application.
 # This constants are NASA base data.
 #
+# 
+# Parts of this file were written with AI assistance (Gemini, Claude)
 ##################################
 
 NASA_CONSTANTS = {

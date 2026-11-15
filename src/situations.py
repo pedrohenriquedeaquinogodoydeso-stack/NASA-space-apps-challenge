@@ -50,6 +50,8 @@
 #   "event"  -> the situation really happened (or is a close retelling of something that did)
 #   "data"   -> real measurements/figures were used to write or scale the situation
 #   "analog" -> a plausible extrapolation; only the underlying numbers are real
+# 
+# Parts of this file were written with AI assistance (Gemini, Claude)
 #################################################################
 
 PERIODS = ["morning", "afternoon", "night"]

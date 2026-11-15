@@ -9,6 +9,8 @@
 #   - Temporary power loads: events can drain (or save) electrical power for a few sols.
 #   - Crew stress (0-100): changed by events, drifts daily, and affects science and incident risk.
 #   - Every crew member is a real astronaut drawn at random from src/astronauts.py.
+# 
+# Parts of this file were written with AI assistance (Gemini, Claude)
 ##################################
 
 import random
