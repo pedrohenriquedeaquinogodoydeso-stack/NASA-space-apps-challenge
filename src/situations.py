@@ -117,6 +117,24 @@ SITUATIONS = [
     # MORNING SITUATIONS
     # ==========================================
     {
+        "id": "solar_blackout_comms",
+        "tag": "COMMS",
+        "periods": ["morning"],
+        "title": "Earth communication blackout",
+        "description": "A solar coronal mass ejection has temporarily cut the signal with Earth. The colony is on its own for the next few hours.",
+        "yes": opt(
+            "Make critical decisions autonomously",
+            "Autonomous leadership resolves the immediate issue, but takes risks without validation.",
+            {"science": 2},
+            rk(0.40, "Decisions made without Earth's support lead to structural errors.", integrity=-6)
+        ),
+        "no": opt(
+            "Pause complex operations until signal returns",
+            "The base enters standby mode, losing valuable research time.",
+            {"science": -5, "oxygen_kg": -2}
+        ),
+    },
+    {
         "id": "dust_front",
         "tag": "WEATHER",
         "periods": ["morning"],
@@ -513,6 +531,26 @@ SITUATIONS = [
     # ==========================================
     # NIGHT SITUATIONS
     # ==========================================
+    {
+        "id": "module_breach",
+        "tag": "STRUCTURE",
+        "periods": ["night"],
+        "requires": {"integrity": {"max": 50}},
+        "title": "Critical structural breach",
+        "description": "The latches on a secondary module gave way under the thermal cycle. Air is rapidly escaping into the Martian atmosphere.",
+        "yes": opt(
+            "Isolate and sacrifice the module immediately",
+            "Fire doors closed. The module is lost, but main pressure has stabilized.",
+            {"integrity": 10, "oxygen_kg": -15, "science": -4},
+            rk(0.20, "The abrupt cutoff damages neighboring electrical connections.", "power": -2)
+        ),
+        "no": opt(
+            "Attempt a nighttime emergency EVA weld",
+            "The crew tries to save the module in the dark and cold.",
+            {"oxygen_kg": -8},
+            rk(0.65, "A failed weld spreads the leak and worsens the crisis.", "integrity": -15, "oxygen_kg": -25)
+        ),
+    },
     {
         "id": "thermal_fault",
         "tag": "STRUCTURE",
