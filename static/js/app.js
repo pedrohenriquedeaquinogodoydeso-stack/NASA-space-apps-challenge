@@ -25,7 +25,6 @@ const colors = {
 
 const page = {
     minHeight: "100vh",
-    overflowX: "hidden",
     color: colors.text,
     fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     background:
@@ -45,6 +44,9 @@ function App() {
     const [siteId, setSiteId] = React.useState(BOOTSTRAP.initialLoadout.landing_site);
     const [rocketId, setRocketId] = React.useState(BOOTSTRAP.initialLoadout.rocket_architecture);
     const [activeModules, setActiveModules] = React.useState(BOOTSTRAP.defaultModules);
+    const [durationDays, setDurationDays] = React.useState(BOOTSTRAP.initialLoadout.mission_duration_days || 500);
+    const [scienceGoal, setScienceGoal] = React.useState(BOOTSTRAP.initialLoadout.science_goal || 500);
+    const [sampleTargetMult, setSampleTargetMult] = React.useState(BOOTSTRAP.initialLoadout.sample_target_mult || 1.0);
     const [loadoutPreview, setLoadoutPreview] = React.useState(BOOTSTRAP.initialLoadout);
 
     const selectedSite = MARS_SITES[siteId];
@@ -65,7 +67,10 @@ function App() {
                 crew_size: crewSize,
                 site: siteId,
                 rocket: rocketId,
-                modules: activeModules
+                modules: activeModules,
+                duration_days: durationDays,
+                science_goal: scienceGoal,
+                sample_target_mult: sampleTargetMult
             })
         })
             .then(function (res) { return res.json(); })
@@ -77,7 +82,7 @@ function App() {
             .catch(function () {});
 
         return function () { cancelled = true; };
-    }, [crewSize, siteId, rocketId, activeModules.join(",")]);
+    }, [crewSize, siteId, rocketId, activeModules.join(","), durationDays, scienceGoal, sampleTargetMult]);
 
     function toggleModule(modId) {
         setActiveModules(function (prev) {
@@ -98,7 +103,10 @@ function App() {
         const gameUrl = "/game?crew_size=" + crewSize +
             "&site=" + encodeURIComponent(siteId) +
             "&rocket=" + encodeURIComponent(rocketId) +
-            "&modules=" + encodeURIComponent(activeModules.join(","));
+            "&modules=" + encodeURIComponent(activeModules.join(",")) +
+            "&duration=" + durationDays +
+            "&science_goal=" + scienceGoal +
+            "&sample_target_mult=" + sampleTargetMult;
 
         return h("section", {
             style: Object.assign({}, container, { paddingTop: "44px", paddingBottom: "60px" })
@@ -171,11 +179,11 @@ function App() {
                 }, "Configure your landing site, rocket propulsion architecture, surface payload modules, and crew before launch.")
             ),
 
-            // Top section: Map & Expanded Telemetry Preview Sidebar
+            // Top section: Map & Sticky Telemetry Preview Sidebar
             h("div", {
                 style: {
                     display: "flex",
-                    alignItems: "stretch",
+                    alignItems: "flex-start",
                     flexWrap: "wrap",
                     gap: "20px"
                 }
@@ -309,7 +317,7 @@ function App() {
                         }),
                         h("span", null, "WARMER")
                     ),
-                    // Landing site details card featuring a larger, prominent site image and detailed scientific description
+                    // Landing site details card
                     h("div", {
                         style: {
                             marginTop: "18px",
@@ -370,11 +378,14 @@ function App() {
                     )
                 ),
 
-                // Expanded Mission Telemetry Preview including NASA baseline constants
+                // Sidebar with Crew Size and Sticky Telemetry Preview
                 h("aside", {
                     style: {
                         flex: "1 1 300px",
                         minWidth: "0",
+                        position: "sticky",
+                        top: "20px",
+                        zIndex: 20,
                         display: "flex",
                         flexDirection: "column",
                         gap: "16px"
@@ -419,15 +430,22 @@ function App() {
                         }, h("span", null, "1 PERSON"), h("span", null, "12 PEOPLE"))
                     ),
 
+                    // Sticky Telemetry Preview Card
                     h("div", {
                         "aria-live": "polite",
                         style: {
                             padding: "18px",
-                            borderLeft: "2px solid " + colors.orange,
-                            background: "rgba(255, 118, 74, .07)",
+                            borderLeft: "3px solid " + colors.orange,
+                            borderTop: "1px solid " + colors.border,
+                            borderRight: "1px solid " + colors.border,
+                            borderBottom: "1px solid " + colors.border,
+                            borderRadius: "8px",
+                            background: "rgba(38, 22, 4, 0.94)",
+                            backdropFilter: "blur(12px)",
+                            boxShadow: "0 12px 35px rgba(0,0,0,0.6)",
                             color: colors.muted,
                             fontSize: "11px",
-                            lineHeight: 1.8
+                            lineHeight: 1.75
                         }
                     },
                         h("strong", { style: { color: colors.text, letterSpacing: "0.8px" } }, "MISSION TELEMETRY PREVIEW"),
@@ -438,15 +456,30 @@ function App() {
                         h("br"),
                         "Rocket: " + selectedRocket.name,
                         h("br"),
+                        "Mission Duration: ",
+                        h("strong", { style: { color: colors.cyan } }, durationDays + " Sols"),
+                        h("br"),
+                        "Science Goal: ",
+                        h("strong", { style: { color: colors.cyan } }, scienceGoal + " pts"),
+                        h("br"),
+                        "Sample Target Scale: ",
+                        h("strong", { style: { color: colors.cyan } }, sampleTargetMult + "x"),
+                        h("br"),
                         "Payload Mass: ",
-                        h("strong", { style: { color: colors.cyan } }, Number(loadoutPreview.total_mass_kg).toLocaleString() + " kg"),
+                        h("strong", { style: { color: loadoutPreview.total_mass_kg > loadoutPreview.max_payload_mass_kg ? colors.red : colors.cyan } }, Number(loadoutPreview.total_mass_kg).toLocaleString() + " kg"),
                         " / " + Number(loadoutPreview.max_payload_mass_kg).toLocaleString() + " kg limit",
+                        h("br"),
+                        "Modules Mass: ",
+                        h("strong", { style: { color: colors.text } }, Number(loadoutPreview.modules_mass_kg || 0).toLocaleString() + " kg"),
+                        h("br"),
+                        "Total Power Generation: ",
+                        h("strong", { style: { color: colors.green } }, (loadoutPreview.total_power_kwe || 0).toFixed(1) + " kWe"),
                         h("br"),
                         "Module Power Net: ",
                         h("strong", { style: { color: loadoutPreview.net_module_power_kwe >= 0 ? colors.green : colors.orange } },
                             (loadoutPreview.net_module_power_kwe >= 0 ? "+" : "") + loadoutPreview.net_module_power_kwe.toFixed(1) + " kWe"
                         ),
-                        " (Base habitat: " + loadoutPreview.base_habitat_power_kwe + " kWe)",
+                        " (Base: " + loadoutPreview.base_habitat_power_kwe + " kWe)",
                         h("div", {
                             style: {
                                 marginTop: "10px",
@@ -455,16 +488,107 @@ function App() {
                                 fontSize: "10px"
                             }
                         },
+                            h("strong", { style: { color: colors.cyan } }, "Mission Total Consumables:"),
+                            h("br"),
+                            "• Total O₂: " + Number(loadoutPreview.total_o2_kg || 0).toLocaleString() + " kg",
+                            h("br"),
+                            "• Total Water: " + Number(loadoutPreview.total_water_l || 0).toLocaleString() + " L",
+                            h("br"),
+                            "• Total Food: " + Number(loadoutPreview.total_food_kg || 0).toLocaleString() + " kg",
+                            h("br"),
+                            "• Total CO₂ Produced: " + Number(loadoutPreview.total_co2_l || 0).toLocaleString() + " L"
+                        ),
+                        h("div", {
+                            style: {
+                                marginTop: "8px",
+                                borderTop: "1px solid rgba(255,255,255,0.1)",
+                                paddingTop: "6px",
+                                fontSize: "10px"
+                            }
+                        },
                             h("strong", { style: { color: colors.cyan } }, "NASA-STD-3001 Baselines:"),
                             h("br"),
-                            "• O2 Consumption: " + NASA_CONSTANTS.O2_KG_PER_PERSON_DAY + " kg/person/day",
+                            "• O₂/person/day: " + NASA_CONSTANTS.O2_KG_PER_PERSON_DAY + " kg",
                             h("br"),
-                            "• Water Need: " + NASA_CONSTANTS.WATER_L_PER_PERSON_DAY + " L/person/day",
+                            "• Water/person/day: " + NASA_CONSTANTS.WATER_L_PER_PERSON_DAY + " L",
                             h("br"),
-                            "• Food Supply: " + NASA_CONSTANTS.FOOD_KG_PER_PERSON_DAY + " kg/person/day",
+                            "• Food/person/day: " + NASA_CONSTANTS.FOOD_KG_PER_PERSON_DAY + " kg",
                             h("br"),
                             "• Surface Radiation: " + (NASA_CONSTANTS.BASE_MARS_RADIATION_MSV_DAY * (1.0 - selectedSite.natural_radiation_shielding)).toFixed(2) + " mSv/day"
                         )
+                    )
+                )
+            ),
+
+            // Mission Parameters & Goals Section
+            h("section", {
+                style: {
+                    marginTop: "24px",
+                    padding: "22px",
+                    border: "1px solid " + colors.border,
+                    borderRadius: "8px",
+                    background: colors.panel
+                }
+            },
+                h("div", { style: { color: colors.orange, fontSize: "10px", fontWeight: 800, letterSpacing: "1.5px" } }, "MISSION PARAMETERS & OBJECTIVES"),
+                h("h2", { style: { margin: "4px 0 16px", fontSize: "18px", fontWeight: 800 } }, "Configure Mission Goals & Duration"),
+                h("div", {
+                    style: {
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                        gap: "20px"
+                    }
+                },
+                    // Duration Slider
+                    h("div", { style: { padding: "14px", border: "1px solid " + colors.border, borderRadius: "6px", background: "rgba(7, 11, 22, 0.5)" } },
+                        h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+                            h("span", { style: { fontSize: "12px", fontWeight: 700 } }, "Mission Duration (Sols)"),
+                            h("span", { style: { color: colors.cyan, fontSize: "16px", fontWeight: 800 } }, durationDays)
+                        ),
+                        h("input", {
+                            type: "range",
+                            min: 100,
+                            max: 1000,
+                            step: 25,
+                            value: durationDays,
+                            onChange: function (e) { setDurationDays(Number(e.target.value)); },
+                            style: { width: "100%", margin: "10px 0", accentColor: colors.orange, cursor: "pointer" }
+                        }),
+                        h("div", { style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" } }, h("span", null, "100 Sols"), h("span", null, "1000 Sols"))
+                    ),
+                    // Science Goal Slider
+                    h("div", { style: { padding: "14px", border: "1px solid " + colors.border, borderRadius: "6px", background: "rgba(7, 11, 22, 0.5)" } },
+                        h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+                            h("span", { style: { fontSize: "12px", fontWeight: 700 } }, "Science Points Goal"),
+                            h("span", { style: { color: colors.cyan, fontSize: "16px", fontWeight: 800 } }, scienceGoal + " pts")
+                        ),
+                        h("input", {
+                            type: "range",
+                            min: 100,
+                            max: 2000,
+                            step: 50,
+                            value: scienceGoal,
+                            onChange: function (e) { setScienceGoal(Number(e.target.value)); },
+                            style: { width: "100%", margin: "10px 0", accentColor: colors.orange, cursor: "pointer" }
+                        }),
+                        h("div", { style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" } }, h("span", null, "100 pts"), h("span", null, "2000 pts"))
+                    ),
+                    // Rock Sample Target Multiplier
+                    h("div", { style: { padding: "14px", border: "1px solid " + colors.border, borderRadius: "6px", background: "rgba(7, 11, 22, 0.5)" } },
+                        h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+                            h("span", { style: { fontSize: "12px", fontWeight: 700 } }, "Rock Sample Target Scale"),
+                            h("span", { style: { color: colors.cyan, fontSize: "16px", fontWeight: 800 } }, sampleTargetMult + "x")
+                        ),
+                        h("input", {
+                            type: "range",
+                            min: 0.5,
+                            max: 2.0,
+                            step: 0.25,
+                            value: sampleTargetMult,
+                            onChange: function (e) { setSampleTargetMult(Number(e.target.value)); },
+                            style: { width: "100%", margin: "10px 0", accentColor: colors.orange, cursor: "pointer" }
+                        }),
+                        h("div", { style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" } }, h("span", null, "0.5x (Easier)"), h("span", null, "2.0x (Hardcore)"))
                     )
                 )
             ),
@@ -673,7 +797,7 @@ function App() {
                                     mod.cons
                                 ),
                                 mod.notes ? h("p", { style: { marginTop: "10px" } },
-                                    h("strong", { style: { color: colors.gray } }, "− Notes: "),
+                                    h("strong", { style: { color: colors.muted } }, "− Notes: "),
                                     mod.notes
                                 ) : null
                             )

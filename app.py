@@ -31,8 +31,16 @@ def number_from_payload(payload, key, minimum, maximum):
     return float(value)
 
 
-def build_loadout_from_params(crew_size: int, site_id: str, rocket_id: str, active_modules: list[str], duration_days: int = 500) -> MissionLoadout:
-    return MissionLoadout(
+def build_loadout_from_params(
+    crew_size: int,
+    site_id: str,
+    rocket_id: str,
+    active_modules: list[str],
+    duration_days: int = 500,
+    science_goal: int = 500,
+    sample_target_mult: float = 1.0,
+) -> MissionLoadout:
+    loadout = MissionLoadout(
         has_solar_array='solar_array' in active_modules,
         has_wpa_recycler='wpa_recycler' in active_modules,
         has_greenhouse='greenhouse' in active_modules,
@@ -40,8 +48,12 @@ def build_loadout_from_params(crew_size: int, site_id: str, rocket_id: str, acti
         crew_size=crew_size,
         landing_site=site_id,
         mission_duration_days=duration_days,
+        science_goal=science_goal,
+        sample_target_mult=sample_target_mult,
         rocket_architecture=rocket_id,
     )
+    loadout.calculate_kg_loadout()
+    return loadout
 
 
 @app.route('/')
@@ -72,8 +84,16 @@ def preview_loadout():
     site_id = data.get('site', 'jezero')
     rocket_id = data.get('rocket', 'ares_v_ntr')
     active_modules = data.get('modules', [])
+    duration_days = int(data.get('duration_days', 500))
+    science_goal = int(data.get('science_goal', 500))
+    sample_target_mult = float(data.get('sample_target_mult', 1.0))
 
-    if not 1 <= crew_size <= 12 or site_id not in MARS_SITES or rocket_id not in ROCKET_ARCHITECTURES:
+    if (
+        not 1 <= crew_size <= 12
+        or site_id not in MARS_SITES
+        or rocket_id not in ROCKET_ARCHITECTURES
+        or not 100 <= duration_days <= 1000
+    ):
         return jsonify({'error': 'Invalid mission parameters'}), 400
 
     loadout = build_loadout_from_params(
@@ -81,6 +101,9 @@ def preview_loadout():
         site_id=site_id,
         rocket_id=rocket_id,
         active_modules=active_modules,
+        duration_days=duration_days,
+        science_goal=science_goal,
+        sample_target_mult=sample_target_mult,
     )
     return jsonify(loadout.to_dict())
 
@@ -100,6 +123,9 @@ def game():
     crew_size_value = request.args.get('crew_size', '4')
     try:
         crew_size = int(crew_size_value)
+        duration_days = int(request.args.get('duration', '500'))
+        science_goal = int(request.args.get('science_goal', '500'))
+        sample_target_mult = float(request.args.get('sample_target_mult', '1.0'))
     except ValueError:
         abort(400)
 
@@ -118,16 +144,17 @@ def game():
 
     site = MARS_SITES[site_id]
     rocket = ROCKET_ARCHITECTURES[rocket_id]
-    
-    # Build the MissionLoadout based on URL parameters exactly like before
+
     loadout = build_loadout_from_params(
         crew_size=crew_size,
         site_id=site_id,
         rocket_id=rocket_id,
         active_modules=active_modules,
+        duration_days=duration_days,
+        science_goal=science_goal,
+        sample_target_mult=sample_target_mult,
     )
 
-    # Bind this loadout directly into the backend game manager
     global mars_game_manager
     mars_game_manager = MarsGameManager(loadout=loadout)
 
@@ -137,15 +164,14 @@ def game():
         'food_kg': NASA_CONSTANTS['FOOD_KG_PER_PERSON_DAY'] * crew_size,
         'co2_l': NASA_CONSTANTS['CO2_L_PRODUCED_PER_PERSON_DAY'] * crew_size,
     }
-    
+
     habitat_targets = {
         'oxygen_partial_pressure_mmhg': NASA_CONSTANTS['TARGET_PPO2_MMHG'],
         'pressure_psi': NASA_CONSTANTS['HABITAT_PRESSURE_PSI'],
         'temperature_c': NASA_CONSTANTS['TARGET_TEMP_C'],
         'humidity_pct': NASA_CONSTANTS['TARGET_HUMIDITY_PCT'],
     }
-    
-    # Fixed radiation calculation using proper operators based on your old code
+
     radiation_msv_day = (
         NASA_CONSTANTS['BASE_MARS_RADIATION_MSV_DAY'] * (1.0 - site['natural_radiation_shielding'])
     )
@@ -185,6 +211,7 @@ def game_situation():
     integrity = number_from_payload(payload, 'integrity', 0, 100)
 
     return jsonify(mars_game_manager.process_action(choice_index, action, solar, integrity))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
