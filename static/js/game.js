@@ -26,18 +26,93 @@ function playButtonSoundwin() {
     const DICTIONARY_ENTRIES = [
         {
             id: "solar-storm",
+            label: "Solar storm",
             term: "Solar storm",
             definition: "A solar storm occurs when intense radiation and charged particles from the Sun hit a planet or its surface, potentially causing damage."
         },
         {
             id: "solar-panel",
+            label: "Solar panel",
             term: "Solar panel",
             definition: "A solar panel is a large panel made from glass and other materials. It captures sunlight and converts it into electricity for homes and other places."
         },
         {
             id: "life-support",
+            label: "Life support",
             term: "Water and oxygen",
             definition: "Water and oxygen are essential resources for survival on another planet, such as Mars. Resources, including energy, are limited there."
+        },
+        {
+            id: "mission-overview",
+            label: "Mission overview",
+            term: "Mars mission",
+            definition: "A mission to Mars depends on making the right choices. Plan your colony, manage resources, and find out if your crew can survive on the Red Planet. Mars Mission is an interactive simulation created for the NASA Space Apps Challenge. First you design a crewed mission to Mars on the planning screen. Then you take command of it, managing resources and facing the unexpected. Plan it. Launch it. Survive it."
+        },
+        {
+            id: "landing-sites",
+            label: "Landing sites",
+            term: "Landing sites",
+            definition: "Jezero, Arcadia, and more. Each landing site has its own temperature, solar efficiency and natural radiation shielding. The best science is not always the safest place."
+        },
+        {
+            id: "mission-hardware",
+            label: "Mission hardware",
+            term: "Mission hardware",
+            definition: "Propulsion, modules, and crew. Choose a rocket architecture and decide which modules fit in the payload: solar array, water recycler, greenhouse or MOXIE oxygen production."
+        },
+        {
+            id: "nasa-numbers",
+            label: "NASA numbers",
+            term: "Real NASA numbers",
+            definition: "Oxygen, water, and food needs per astronaut are based on NASA reference values, so your crew consumes what a real crew would."
+        },
+        {
+            id: "mission-decisions",
+            label: "Mission decisions",
+            term: "Decisions under pressure",
+            definition: "Every choice shapes the outcome. Once on Mars, you face situations that demand a yes or no. Your habitat integrity and solar power decide how well you survive them."
+        },
+        {
+            id: "planning-strategy",
+            label: "Planning strategy",
+            term: "Plan ahead",
+            definition: "Everyone knows that planning missions is decisive, but it can involve many difficult choices in order to reduce damage and needs. Analyze the important variables."
+        },
+        {
+            id: "oxygen",
+            label: "Oxygen",
+            term: "Oxygen",
+            definition: "It is essential for the Cellular respiration and the maintenance of life, being used in aerobic respiration of animals, plants, and most living organisms. On a space mission, it becomes one of the first points that must be observed. Average per crew member: 0.835 kg per day."
+        },
+        {
+            id: "water-food",
+            label: "Water & food",
+            term: "Water and food",
+            definition: "Is crucial for the survival of the crew, and it is necessary to plan the amount of water and food that will be needed for the entire mission. Average per crew member: 2.5 L of water and 1.8 kg of food per day."
+        },
+        {
+            id: "temperature",
+            label: "Temperature",
+            term: "Mars temperature",
+            definition: "The temperatures can vary greatly on Mars, with the average temperature being -81.4°F (-63°C). In the Martian summer, it can reach up to +20°C (68°F), and, in the winter, up to -99.4°F (-73°C)."
+        },
+        {
+            id: "pressure",
+            label: "Pressure",
+            term: "Atmospheric pressure",
+            definition: "The average atmospheric pressure in Mars is 6.1 millibars (less than 1% of Earth's), but it can go from 0.7 millibar up to 12 or 14 millibars."
+        },
+        {
+            id: "humidity",
+            label: "Humidity",
+            term: "Humidity",
+            definition: "The humidity levels on Mars can be extremely low, due to its weak atmospheric pressure (100 times lower than Earth's) and its freezing temperatures."
+        },
+        {
+            id: "solar-radiation",
+            label: "Solar radiation",
+            term: "Solar radiation",
+            definition: "Mars experiences lower solar irradiance levels (around 586 W/m²), but extremely high UV radiation levels on its surface. The solar radiation levels on Mars are about 43% of Earth's."
         }
     ];
     const colors = {
@@ -551,7 +626,16 @@ function playButtonSoundwin() {
 
     function initDictionary() {
         const book = $("dictionary-book");
-        const buttons = book.querySelectorAll(".dictionary-bookmark");
+        const nav = book.querySelector(".dictionary-bookmarks");
+        DICTIONARY_ENTRIES.forEach(function (entry) {
+            const button = h("button", "dictionary-bookmark", entry.label);
+            button.type = "button";
+            button.dataset.entry = entry.id;
+            button.setAttribute("aria-controls", "dictionary-page");
+            button.setAttribute("aria-expanded", "false");
+            nav.appendChild(button);
+        });
+        const buttons = nav.querySelectorAll(".dictionary-bookmark");
 
         buttons.forEach(function (button) {
             button.addEventListener("click", function () {

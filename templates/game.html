@@ -82,15 +82,19 @@
         .dictionary-series, .dictionary-page-number { color: var(--cyan); font-size: 9px; font-weight: 800; letter-spacing: 1.5px; }
         .dictionary-cover h3 { margin: 12px 0 6px; color: var(--text); font-size: clamp(21px, 3vw, 29px); line-height: 1.1; }
         .dictionary-cover p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
-        .dictionary-bookmarks { position: absolute; top: 0; right: 12px; z-index: 3; display: flex; gap: 5px; }
+        .dictionary-bookmarks { position: absolute; top: 0; left: 12px; right: 12px; z-index: 3; display: flex; flex-direction: row; gap: 5px;
+                                overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
         .dictionary-bookmark { padding: 8px 10px 10px; border: 0; border-radius: 4px 4px 0 0; color: #311e00; font: inherit; font-size: 10px; font-weight: 800;
-                               cursor: pointer; transform: translateY(4px); transition: transform .18s ease, filter .18s ease; }
+                               flex: 0 0 auto; white-space: nowrap; cursor: pointer; transform: translateY(4px); transition: transform .18s ease, filter .18s ease; }
+        .dictionary-bookmark:nth-child(3n + 1) { background: var(--orange); }
+        .dictionary-bookmark:nth-child(3n + 2) { background: var(--cyan); }
+        .dictionary-bookmark:nth-child(3n) { background: var(--green); }
         .dictionary-bookmark[data-entry="solar-storm"] { background: var(--orange); }
         .dictionary-bookmark[data-entry="solar-panel"] { background: var(--cyan); }
         .dictionary-bookmark[data-entry="life-support"] { background: var(--green); }
         .dictionary-bookmark:hover, .dictionary-bookmark[aria-expanded="true"] { filter: brightness(1.12); transform: translateY(0); }
         .dictionary-bookmark:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
-        .dictionary-page { right: 0; left: 48%; display: flex; flex-direction: column; justify-content: center; padding: 20px 18px 20px 24px;
+        .dictionary-page { right: 0; left: 48%; display: flex; flex-direction: column; justify-content: center; overflow-y: auto; padding: 20px 18px 20px 24px;
                            background: linear-gradient(90deg, rgba(0, 0, 0, .18), transparent 18%), rgba(58, 0, 0, .55);
                            opacity: 0; visibility: hidden; transition: opacity .25s ease, visibility .25s ease; }
         .dictionary-page h3 { margin: 12px 0 8px; color: var(--text); font-size: 18px; }
@@ -104,7 +108,7 @@
             .dictionary-book.is-open .dictionary-cover h3 { margin: 6px 0 0; font-size: 18px; }
             .dictionary-cover p { display: none; }
             .dictionary-page { top: 148px; right: 0; bottom: 0; left: 0; padding: 18px; }
-            .dictionary-bookmarks { right: 4px; gap: 3px; }
+            .dictionary-bookmarks { left: 4px; right: 4px; gap: 3px; }
             .dictionary-bookmark { padding-right: 7px; padding-left: 7px; font-size: 9px; }
         }
 
@@ -232,9 +236,6 @@
                         <p id="dictionary-definition">Select one of the colored tabs to read a space dictionary entry.</p>
                     </div>
                     <nav class="dictionary-bookmarks" aria-label="Dictionary bookmarks">
-                        <button class="dictionary-bookmark" type="button" data-entry="solar-storm" aria-controls="dictionary-page" aria-expanded="false">Solar storm</button>
-                        <button class="dictionary-bookmark" type="button" data-entry="solar-panel" aria-controls="dictionary-page" aria-expanded="false">Solar panel</button>
-                        <button class="dictionary-bookmark" type="button" data-entry="life-support" aria-controls="dictionary-page" aria-expanded="false">Water &amp; oxygen</button>
                     </nav>
                 </div>
             </section>
