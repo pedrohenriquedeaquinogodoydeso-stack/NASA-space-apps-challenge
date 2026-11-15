@@ -24,6 +24,24 @@ function playButtonSound2() {
         console.warn("Não foi possível tocar o som do botão.", error);
     });
 }
+let isPlayingButtonSound4 = false;
+function playButtonSound4() {
+    if (isPlayingButtonSound4) {
+        return;
+    }
+
+    const sound = new Audio("/static/music/holder.mp3");
+    sound.volume = 0.4;
+    isPlayingButtonSound4 = true;
+    sound.addEventListener("ended", function () {
+        isPlayingButtonSound4 = false;
+    }, { once: true });
+    sound.play().catch(function (error) {
+        isPlayingButtonSound4 = false;
+        console.warn("Não foi possível tocar o som do botão.", error);
+    });
+}
+
 
 function PlanningApp() {
     const [crewSize, setCrewSize] = React.useState(BOOTSTRAP.initialLoadout.crew_size);
@@ -400,7 +418,7 @@ function PlanningApp() {
                             max: 12,
                             step: 1,
                             value: crewSize,
-                            onChange: function (event) { setCrewSize(Number(event.target.value)); },
+                            onChange: function (event) { setCrewSize(Number(event.target.value)); playButtonSound4();},
                             "aria-label": "Number of crew members",
                             style: { width: "100%", margin: "12px 0", accentColor: colors.orange, cursor: "pointer" }
                         }),
@@ -442,7 +460,7 @@ function PlanningApp() {
                             max: 1000,
                             step: 25,
                             value: durationDays,
-                            onChange: function (e) { setDurationDays(Number(e.target.value)); },
+                            onChange: function (e) { setDurationDays(Number(e.target.value)); playButtonSound4();},
                             style: { width: "100%", margin: "10px 0", accentColor: colors.orange, cursor: "pointer" }
                         }),
                         h("div", { style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" } }, h("span", null, "100 Sols"), h("span", null, "1000 Sols"))
@@ -459,7 +477,7 @@ function PlanningApp() {
                             max: 2000,
                             step: 50,
                             value: scienceGoal,
-                            onChange: function (e) { setScienceGoal(Number(e.target.value)); },
+                            onChange: function (e) { setScienceGoal(Number(e.target.value)); playButtonSound4(); },
                             style: { width: "100%", margin: "10px 0", accentColor: colors.orange, cursor: "pointer" }
                         }),
                         h("div", { style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" } }, h("span", null, "100 pts"), h("span", null, "2000 pts"))
@@ -476,7 +494,7 @@ function PlanningApp() {
                             max: 2.0,
                             step: 0.25,
                             value: sampleTargetMult,
-                            onChange: function (e) { setSampleTargetMult(Number(e.target.value)); },
+                            onChange: function (e) { setSampleTargetMult(Number(e.target.value)); playButtonSound4();},
                             style: { width: "100%", margin: "10px 0", accentColor: colors.orange, cursor: "pointer" }
                         }),
                         h("div", { style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" } }, h("span", null, "0.5x (Easier)"), h("span", null, "2.0x (Hardcore)"))
@@ -528,7 +546,7 @@ function PlanningApp() {
                         return h("button", {
                             key: key,
                             type: "button",
-                            onClick: function () { setRocketId(key); },
+                            onClick: function () { setRocketId(key); playButtonSound(); },
                             "aria-pressed": isSelected,
                             style: {
                                 padding: "18px",
