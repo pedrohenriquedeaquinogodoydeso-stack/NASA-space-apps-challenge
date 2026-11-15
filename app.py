@@ -192,6 +192,9 @@ def game():
         daily_requirements=daily_requirements,
         habitat_targets=habitat_targets,
         radiation_msv_day=radiation_msv_day,
+        active_modules=active_modules,
+        modules=MODULES,
+        nasa_constants=NASA_CONSTANTS,
     )
 
 

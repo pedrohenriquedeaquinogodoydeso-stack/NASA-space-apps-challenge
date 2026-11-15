@@ -26,8 +26,9 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
-    <!-- Código compartilhado (estilos, header e footer) + página de planejamento -->
+    <!-- Código compartilhado (estilos, header e footer) + sidebar de telemetria + página de planejamento -->
     <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mission-sidebar.js') }}"></script>
     <script src="{{ url_for('static', filename='js/planning.js') }}"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 /*
   Mars Mission - Planning page (planning.html)
   Mission configuration: landing site, rocket, modules, crew and duration.
-  Depends on common.js and on the data injected by Flask (#mission-bootstrap).
+  Depends on common.js, mission-sidebar.js and on the data injected by Flask (#mission-bootstrap).
 */
 
 const BOOTSTRAP = JSON.parse(document.getElementById("mission-bootstrap").textContent);
@@ -146,7 +146,7 @@ function PlanningApp() {
                 }, "Configure your landing site, rocket propulsion architecture, surface payload modules, and crew before launch.")
             ),
 
-            // Top section: Map & Sticky Telemetry Preview Sidebar
+            // Top section: Map & Crew Size
             h("div", {
                 style: {
                     display: "flex",
@@ -345,14 +345,11 @@ function PlanningApp() {
                     )
                 ),
 
-                // Sidebar with Crew Size and Sticky Telemetry Preview
+                // Crew Size (the mission telemetry lives in the fixed MissionSidebar)
                 h("aside", {
                     style: {
                         flex: "1 1 300px",
                         minWidth: "0",
-                        position: "sticky",
-                        top: "20px",
-                        zIndex: 20,
                         display: "flex",
                         flexDirection: "column",
                         gap: "16px"
@@ -395,94 +392,6 @@ function PlanningApp() {
                         h("div", {
                             style: { display: "flex", justifyContent: "space-between", color: colors.muted, fontSize: "10px" }
                         }, h("span", null, "1 PERSON"), h("span", null, "12 PEOPLE"))
-                    ),
-
-                    // Sticky Telemetry Preview Card
-                    h("div", {
-                        "aria-live": "polite",
-                        style: {
-                            padding: "18px",
-                            borderLeft: "3px solid " + colors.orange,
-                            borderTop: "1px solid " + colors.border,
-                            borderRight: "1px solid " + colors.border,
-                            borderBottom: "1px solid " + colors.border,
-                            borderRadius: "8px",
-                            background: "rgba(38, 22, 4, 0.94)",
-                            backdropFilter: "blur(12px)",
-                            boxShadow: "0 12px 35px rgba(0,0,0,0.6)",
-                            color: colors.muted,
-                            fontSize: "11px",
-                            lineHeight: 1.75
-                        }
-                    },
-                        h("strong", { style: { color: colors.text, letterSpacing: "0.8px" } }, "MISSION TELEMETRY PREVIEW"),
-                        h("br"),
-                        crewSize + (crewSize === 1 ? " crew member" : " crew members"),
-                        h("br"),
-                        selectedSite.short_name + " (" + selectedSite.avg_temp_c + "°C)",
-                        h("br"),
-                        "Rocket: " + selectedRocket.name,
-                        h("br"),
-                        "Mission Duration: ",
-                        h("strong", { style: { color: colors.cyan } }, durationDays + " Sols"),
-                        h("br"),
-                        "Science Goal: ",
-                        h("strong", { style: { color: colors.cyan } }, scienceGoal + " pts"),
-                        h("br"),
-                        "Sample Target Scale: ",
-                        h("strong", { style: { color: colors.cyan } }, sampleTargetMult + "x"),
-                        h("br"),
-                        "Payload Mass: ",
-                        h("strong", { style: { color: loadoutPreview.total_mass_kg > loadoutPreview.max_payload_mass_kg ? colors.red : colors.cyan } }, Number(loadoutPreview.total_mass_kg).toLocaleString() + " kg"),
-                        " / " + Number(loadoutPreview.max_payload_mass_kg).toLocaleString() + " kg limit",
-                        h("br"),
-                        "Modules Mass: ",
-                        h("strong", { style: { color: colors.text } }, Number(loadoutPreview.modules_mass_kg || 0).toLocaleString() + " kg"),
-                        h("br"),
-                        "Total Power Generation: ",
-                        h("strong", { style: { color: colors.green } }, (loadoutPreview.total_power_kwe || 0).toFixed(1) + " kWe"),
-                        h("br"),
-                        "Module Power Net: ",
-                        h("strong", { style: { color: loadoutPreview.net_module_power_kwe >= 0 ? colors.green : colors.orange } },
-                            (loadoutPreview.net_module_power_kwe >= 0 ? "+" : "") + loadoutPreview.net_module_power_kwe.toFixed(1) + " kWe"
-                        ),
-                        " (Base: " + loadoutPreview.base_habitat_power_kwe + " kWe)",
-                        h("div", {
-                            style: {
-                                marginTop: "10px",
-                                borderTop: "1px solid rgba(255,255,255,0.1)",
-                                paddingTop: "8px",
-                                fontSize: "10px"
-                            }
-                        },
-                            h("strong", { style: { color: colors.cyan } }, "Mission Total Consumables:"),
-                            h("br"),
-                            "• Total O₂: " + Number(loadoutPreview.total_o2_kg || 0).toLocaleString() + " kg",
-                            h("br"),
-                            "• Total Water: " + Number(loadoutPreview.total_water_l || 0).toLocaleString() + " L",
-                            h("br"),
-                            "• Total Food: " + Number(loadoutPreview.total_food_kg || 0).toLocaleString() + " kg",
-                            h("br"),
-                            "• Total CO₂ Produced: " + Number(loadoutPreview.total_co2_l || 0).toLocaleString() + " L"
-                        ),
-                        h("div", {
-                            style: {
-                                marginTop: "8px",
-                                borderTop: "1px solid rgba(255,255,255,0.1)",
-                                paddingTop: "6px",
-                                fontSize: "10px"
-                            }
-                        },
-                            h("strong", { style: { color: colors.cyan } }, "NASA-STD-3001 Baselines:"),
-                            h("br"),
-                            "• O₂/person/day: " + NASA_CONSTANTS.O2_KG_PER_PERSON_DAY + " kg",
-                            h("br"),
-                            "• Water/person/day: " + NASA_CONSTANTS.WATER_L_PER_PERSON_DAY + " L",
-                            h("br"),
-                            "• Food/person/day: " + NASA_CONSTANTS.FOOD_KG_PER_PERSON_DAY + " kg",
-                            h("br"),
-                            "• Surface Radiation: " + (NASA_CONSTANTS.BASE_MARS_RADIATION_MSV_DAY * (1.0 - selectedSite.natural_radiation_shielding)).toFixed(2) + " mSv/day"
-                        )
                     )
                 )
             ),
@@ -824,10 +733,36 @@ function PlanningApp() {
         );
     }
 
+    const sidebarData = {
+        crewSize: crewSize,
+        siteName: selectedSite.name,
+        siteTempC: selectedSite.avg_temp_c,
+        rocketName: selectedRocket.name,
+        durationDays: durationDays,
+        scienceGoal: scienceGoal,
+        sampleTargetMult: sampleTargetMult,
+        loadout: loadoutPreview,
+        activeModules: activeModules
+            .filter(function (id) { return MODULES[id]; })
+            .map(function (id) { return { id: id, name: MODULES[id].name }; }),
+        baselines: {
+            o2: NASA_CONSTANTS.O2_KG_PER_PERSON_DAY,
+            water: NASA_CONSTANTS.WATER_L_PER_PERSON_DAY,
+            food: NASA_CONSTANTS.FOOD_KG_PER_PERSON_DAY
+        },
+        radiationMsvDay: NASA_CONSTANTS.BASE_MARS_RADIATION_MSV_DAY * (1.0 - selectedSite.natural_radiation_shielding)
+    };
+
     return h("main", { style: page },
         h(SiteHeader),
         plannerContent(),
-        h(SiteFooter)
+        h(SiteFooter),
+        h(MissionSidebar, {
+            data: sidebarData,
+            title: "MISSION TELEMETRY",
+            subtitle: "Live preview of your mission plan. It updates as you change the options.",
+            live: true
+        })
     );
 }
 

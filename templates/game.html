@@ -253,7 +253,7 @@
         <h2 id="ending-title"></h2>
         <p id="ending-text"></p>
         <p id="ending-stats"></p>
-        <a class="btn" href="/">Plan a new mission</a>
+        <a class="btn" href="/planning">Plan a new mission</a>
     </div>
 </div>
 
@@ -264,9 +264,21 @@
         "dailyRequirements": daily_requirements,
         "habitatTargets": habitat_targets,
         "radiationMsvDay": radiation_msv_day,
-        "loadout": loadout
+        "loadout": loadout,
+        "site": site,
+        "activeModules": active_modules,
+        "modules": modules,
+        "nasaConstants": nasa_constants
     } | tojson }}
 </script>
 <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+
+<!-- Mission sidebar (fixed panel with the mission setup) -->
+<div id="mission-sidebar-root"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="{{ url_for('static', filename='js/common.js') }}"></script>
+<script src="{{ url_for('static', filename='js/mission-sidebar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/game-sidebar.js') }}"></script>
 </body>
 </html>
