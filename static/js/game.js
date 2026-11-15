@@ -88,6 +88,152 @@ function playButtonSound3() {
         });
     }
 
+    // ------------------------------------------------- real-event badge + panel
+    const NASA_KINDS = {
+        event:  { badge: "Real NASA event",       heading: "What really happened" },
+        data:   { badge: "Real NASA data",        heading: "The real data behind it" },
+        analog: { badge: "Inspired by NASA data", heading: "The real numbers behind it" }
+    };
+    const NASA_CSS = [
+        ".nasa-badge{display:inline-flex;align-items:center;gap:.45em;margin:.35rem 0 .15rem;padding:.3em .8em;",
+        "border:1px solid var(--cyan);border-radius:999px;background:rgba(112,225,232,.12);color:var(--cyan);",
+        "font:inherit;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;}",
+        ".nasa-badge:hover,.nasa-badge:focus-visible{background:rgba(112,225,232,.26);outline:none;}",
+        ".nasa-badge .nasa-i{display:inline-grid;place-items:center;width:1.25em;height:1.25em;border-radius:50%;",
+        "background:var(--cyan);color:#0b1b1d;font-size:.85em;line-height:1;}",
+        ".nasa-badge[hidden],.nasa-modal[hidden]{display:none;}",
+        ".nasa-modal{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:1rem;",
+        "background:rgba(0,0,0,.62);}",
+        ".nasa-card{position:relative;width:min(34rem,100%);max-height:85vh;overflow:auto;padding:1.4rem 1.5rem;",
+        "border:1px solid var(--cyan);border-radius:14px;background:var(--bg);color:var(--text);",
+        "box-shadow:0 12px 40px rgba(0,0,0,.55);}",
+        ".nasa-card h3{margin:.2rem 0 .8rem;font-size:1.2rem;}",
+        ".nasa-kicker{color:var(--cyan);font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}",
+        ".nasa-heading{margin:.2rem 0;color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;}",
+        ".nasa-fact{margin:.2rem 0 .9rem;line-height:1.55;}",
+        ".nasa-note{margin:0 0 .9rem;padding:.55rem .75rem;border-left:3px solid var(--orange);",
+        "background:rgba(255,118,74,.1);color:var(--muted);font-size:.85rem;line-height:1.45;}",
+        ".nasa-source{margin:0 0 1rem;color:var(--muted);font-size:.85rem;line-height:1.4;}",
+        ".nasa-source b{color:var(--text);}",
+        ".nasa-link{display:inline-block;padding:.55em 1.1em;border-radius:8px;background:var(--cyan);color:#0b1b1d;",
+        "font-weight:700;text-decoration:none;}",
+        ".nasa-link:hover,.nasa-link:focus-visible{filter:brightness(1.12);outline:2px solid var(--text);outline-offset:2px;}",
+        ".nasa-host{display:block;margin-top:.35rem;color:var(--muted);font-size:.75rem;}",
+        ".nasa-close{position:absolute;top:.5rem;right:.7rem;width:2rem;height:2rem;border:0;border-radius:50%;",
+        "background:transparent;color:var(--text);font-size:1.5rem;line-height:1;cursor:pointer;}",
+        ".nasa-close:hover,.nasa-close:focus-visible{background:rgba(255,255,255,.14);outline:none;}"
+    ].join("");
+    const nasaUI = { badge: null, modal: null, lastFocus: null };
+
+    // Only plain http(s) links coming from the server are ever opened.
+    function safeUrl(raw) {
+        try {
+            const u = new URL(raw);
+            return (u.protocol === "https:" || u.protocol === "http:") ? u : null;
+        } catch (e) { return null; }
+    }
+
+    function isNasaHost(host) {
+        return host === "nasa.gov" || host.endsWith(".nasa.gov");
+    }
+
+    function initNasaPanel() {
+        const style = h("style");
+        style.textContent = NASA_CSS;
+        document.head.appendChild(style);
+
+        const badge = h("button", "nasa-badge");
+        badge.type = "button";
+        badge.hidden = true;
+        badge.setAttribute("aria-haspopup", "dialog");
+        badge.addEventListener("click", openNasaPanel);
+        $("title").insertAdjacentElement("afterend", badge);
+        nasaUI.badge = badge;
+
+        const modal = h("div", "nasa-modal");
+        modal.hidden = true;
+        modal.setAttribute("role", "dialog");
+        modal.setAttribute("aria-modal", "true");
+        modal.setAttribute("aria-labelledby", "nasa-modal-title");
+        const card = h("div", "nasa-card");
+        const close = h("button", "nasa-close", "\u00d7");
+        close.type = "button";
+        close.setAttribute("aria-label", "Close");
+        close.addEventListener("click", closeNasaPanel);
+        const title = h("h3");
+        title.id = "nasa-modal-title";
+        const link = h("a", "nasa-link");
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        card.append(close, h("div", "nasa-kicker"), title, h("div", "nasa-heading"), h("p", "nasa-fact"),
+            h("p", "nasa-note"), h("p", "nasa-source"), link, h("span", "nasa-host"));
+        modal.appendChild(card);
+        modal.addEventListener("click", function (e) { if (e.target === modal) closeNasaPanel(); });
+        document.body.appendChild(modal);
+        nasaUI.modal = modal;
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && !modal.hidden) closeNasaPanel();
+        });
+    }
+
+    function renderNasa(info) {
+        closeNasaPanel(true);
+        const badge = nasaUI.badge;
+        if (!badge) return;
+        if (!info || !info.fact) {
+            badge.hidden = true;
+            return;
+        }
+        const kind = NASA_KINDS[info.kind] || NASA_KINDS.data;
+        badge.replaceChildren(h("span", "nasa-i", "i"), document.createTextNode(kind.badge));
+        badge.setAttribute("aria-label", kind.badge + ". Open details and source.");
+        badge.hidden = false;
+    }
+
+    function openNasaPanel() {
+        const info = state.situation && state.situation.nasa;
+        if (!info || !nasaUI.modal) return;
+        playButtonSound3();
+        const kind = NASA_KINDS[info.kind] || NASA_KINDS.data;
+        const q = function (cls) { return nasaUI.modal.querySelector("." + cls); };
+        q("nasa-kicker").textContent = kind.badge;
+        $("nasa-modal-title").textContent = state.situation.title;
+        q("nasa-heading").textContent = kind.heading;
+        q("nasa-fact").textContent = info.fact;
+
+        const note = q("nasa-note");
+        note.hidden = info.kind !== "analog";
+        note.textContent = info.kind === "analog"
+            ? "Only the numbers above are real. The exact failure in this scenario is our own extrapolation."
+            : "";
+
+        const src = q("nasa-source");
+        src.replaceChildren(h("b", "", "Source: "), document.createTextNode(info.source || "NASA"));
+
+        const link = q("nasa-link");
+        const host = q("nasa-host");
+        const url = info.url ? safeUrl(info.url) : null;
+        link.hidden = host.hidden = !url;
+        if (url) {
+            link.href = url.href;
+            link.textContent = "Read the source \u2197";
+            const name = url.hostname.replace(/^www\./, "");
+            host.textContent = (isNasaHost(url.hostname) ? "Official NASA page \u00b7 " : "External page \u00b7 ") + name;
+        }
+
+        nasaUI.lastFocus = document.activeElement;
+        nasaUI.modal.hidden = false;
+        q("nasa-close").focus();
+    }
+
+    function closeNasaPanel(silent) {
+        const modal = nasaUI.modal;
+        if (!modal || modal.hidden) return;
+        modal.hidden = true;
+        if (silent !== true && nasaUI.lastFocus && nasaUI.lastFocus.focus) nasaUI.lastFocus.focus();
+    }
+
     function renderSituation(s) {
         if (!s) return;
         if (s.game_over) { showEnding(s); return; }
@@ -95,6 +241,7 @@ function playButtonSound3() {
         $("tag").textContent = s.tag;
         $("title").textContent = s.title;
         $("description").textContent = s.description;
+        renderNasa(s.nasa);
         $("label-yes").textContent = s.options.yes;
         $("label-no").textContent = s.options.no;
         $("btn-yes").disabled = false;
@@ -399,6 +546,7 @@ function playButtonSound3() {
 
     async function init() {
         initDictionary();
+        initNasaPanel();
         $("btn-yes").addEventListener("click", function () { choose("yes"); });
         $("btn-no").addEventListener("click", function () { choose("no"); });
         $("tab-survival").addEventListener("click", function () { selectTab("survival"); });
