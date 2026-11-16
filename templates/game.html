@@ -200,7 +200,6 @@
             <strong>{{ site_name }}</strong><br>
             {{ crew_size }} crew · {{ rocket.name }} · {{ temperature }}°C
         </div>
-        <audio src="/static/music/space.mp3" autoplay loop onloadedmetadata="this.volume = 0.4"></audio>
     </header>
 
     <main class="layout">
@@ -261,6 +260,69 @@
     </div>
 </div>
 
+    <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="false">Sound off</button>
+
+    <script>
+        // Background music. Browsers block audio that starts on its own, so we:
+        //  1. try to play on load (works only if the browser allows it),
+        //  2. otherwise start on the first click, tap or key press,
+        //  3. always let the player turn the sound on or off with the button.
+        (function () {
+            var audio = new Audio("{{ url_for('static', filename='music/space.mp3') }}");
+            audio.loop = true;
+            audio.volume = 0.3;
+
+            var toggle = document.getElementById("sound-toggle");
+            var mutedByUser = false;
+
+            function tryPlay() {
+                var attempt = audio.play();
+                if (attempt && attempt.catch) {
+                    attempt.catch(function (error) {
+                        console.warn("Could not play the background music yet.", error);
+                    });
+                }
+            }
+
+            // The button label always follows the real state of the audio.
+            audio.addEventListener("play", function () {
+                toggle.textContent = "Sound on";
+                toggle.setAttribute("aria-pressed", "true");
+            });
+            audio.addEventListener("pause", function () {
+                toggle.textContent = "Sound off";
+                toggle.setAttribute("aria-pressed", "false");
+            });
+            audio.addEventListener("error", function () {
+                console.warn("space.mp3 failed to load. Check that it is in static/music/.");
+            });
+
+            toggle.addEventListener("click", function () {
+                if (audio.paused) {
+                    mutedByUser = false;
+                    tryPlay();
+                } else {
+                    mutedByUser = true;
+                    audio.pause();
+                }
+            });
+
+            // First interaction anywhere on the page starts the music (unless the player already chose off).
+            function startOnFirstInteraction(event) {
+                if (toggle.contains(event.target)) { return; }
+                if (!mutedByUser && audio.paused) { tryPlay(); }
+                ["pointerdown", "keydown"].forEach(function (name) {
+                    document.removeEventListener(name, startOnFirstInteraction);
+                });
+            }
+            ["pointerdown", "keydown"].forEach(function (name) {
+                document.addEventListener(name, startOnFirstInteraction);
+            });
+
+            tryPlay();
+        })();
+    </script>
+
 <script id="game-bootstrap" type="application/json">
     {{ {
         "crewSize": crew_size,
@@ -283,5 +345,6 @@
 <script src="{{ url_for('static', filename='js/common.js') }}"></script>
 <script src="{{ url_for('static', filename='js/mission-sidebar.js') }}"></script>
 <script src="{{ url_for('static', filename='js/game-sidebar.js') }}"></script>
+
 </body>
 </html>
