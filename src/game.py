@@ -125,7 +125,7 @@ class MarsGameManager:
         self.site_id = site_id if site_id in MARS_SITES else "jezero"
         self.site = MARS_SITES[self.site_id]
         self.crew = getattr(loadout, "crew_size", 4)
-        self.crew_members = pick_crew(self.rng, self.crew)  # real astronauts, fixed for the whole game
+        self.crew_members = pick_crew(self.rng, self.crew)
         self.duration = getattr(loadout, "mission_duration_days", 500)
         self.modules = {
             "solar_array": getattr(loadout, "has_solar_array", True),
@@ -146,7 +146,7 @@ class MarsGameManager:
         self.integrity = 100.0
         self.solar = 1.0
         self.stress = STRESS_START
-        self.power_mods = []  # temporary loads: {"kwe", "sols_left", "source"}
+        self.power_mods = []
 
         self.sol = 1
         self.period_idx = 0
@@ -164,7 +164,7 @@ class MarsGameManager:
 
     # ------------------------------------------------------------------ power
     def _power(self):
-        base = NASA_CONSTANTS["BASE_HABITAT_POWER_KWE"]  # 3 Kilopower units cover the base habitat
+        base = NASA_CONSTANTS["BASE_HABITAT_POWER_KWE"]
         solar_gen = 0.0
         if self.modules["solar_array"]:
             solar_gen = MODULES["solar_array"]["power_kwe"] * self.site["solar_efficiency"] * self.solar
@@ -172,13 +172,12 @@ class MarsGameManager:
             MODULES[m]["power_kwe"] for m, on in self.modules.items()
             if on and not MODULES[m]["is_generator"]
         )
-        event_power = sum(m["kwe"] for m in self.power_mods)  # temporary event loads (negative) or savings (positive)
+        event_power = sum(m["kwe"] for m in self.power_mods)
         supply = max(0.0, base + solar_gen + event_power)
         net = supply - demand
         ratio = 1.0 if demand == 0 else min(1.0, max(0.0, net / demand))
         return supply, demand, net, ratio
 
-    # ------------------------------------------------------------------ stress
     def _stress_status(self):
         return "crit" if self.stress >= STRESS_CRIT else "warn" if self.stress >= STRESS_WARN else "ok"
 
@@ -206,7 +205,6 @@ class MarsGameManager:
             total += 0.3
         return total
 
-    # ------------------------------------------------------------- daily flow
     def _flows(self):
         """Net change per sol for each resource (negative = loss)."""
         _, _, _, ratio = self._power()
@@ -229,7 +227,6 @@ class MarsGameManager:
                 flows["water"] += ISRU_WATER_L_DAY * ratio
         return flows
 
-    # ---------------------------------------------------------------- effects
     @staticmethod
     def _change(label, delta, unit="", decimals=0, invert=False):
         """One line of the change report. `invert=True` means a rise is bad (the UI colors it red)."""
@@ -282,7 +279,6 @@ class MarsGameManager:
             changes.append(self._change(self.objectives[fx["sample"]]["name"], 1, "sample"))
         return changes
 
-    # ------------------------------------------------------------ situations
     def _stats(self):
         """Current values that an event's 'requires' can test."""
         _, _, net, _ = self._power()
@@ -295,7 +291,7 @@ class MarsGameManager:
     def _meets(self, requires):
         if not requires:
             return True
-        if isinstance(requires, (list, tuple)):  # legacy form: list of modules
+        if isinstance(requires, (list, tuple)):
             requires = {"modules": list(requires)}
         stats = self._stats()
         for key, rule in requires.items():
@@ -304,7 +300,7 @@ class MarsGameManager:
             elif key == "without_modules":
                 ok = not any(self.modules.get(m) for m in rule)
             else:
-                if not isinstance(rule, dict):  # shorthand: a number means "at least"
+                if not isinstance(rule, dict):
                     rule = {"min": rule}
                 ok = rule.get("min", float("-inf")) <= stats[key] <= rule.get("max", float("inf"))
             if not ok:
@@ -459,7 +455,6 @@ class MarsGameManager:
             "stats": {"sol": min(self.sol, self.duration), "science": round(self.science), "samples": sum(self.samples)},
         }
 
-    # ------------------------------------------------------------ dashboards
     @staticmethod
     def _status(days_left):
         if days_left is None:

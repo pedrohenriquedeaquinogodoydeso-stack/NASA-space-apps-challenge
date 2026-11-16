@@ -359,8 +359,6 @@ function playButtonSoundwin() {
         if (target) c.appendChild(h("small", "", target));
         return c;
     }
-
-    // ------------------------------------------------------------ crew + changes
     function div(cls, parent) {
         const e = h("div", cls);
         if (parent) parent.appendChild(e);
@@ -440,7 +438,7 @@ function playButtonSoundwin() {
             g.appendChild(h("div", "label", title));
             const box = h("div", "chg");
             list.forEach(function (c) {
-                const good = c.invert ? c.delta < 0 : c.delta > 0;  // stress: a rise is bad
+                const good = c.invert ? c.delta < 0 : c.delta > 0;
                 const chip = h("span", "chg-item " + (good ? "up" : "down"));
                 chip.append(h("span", "arrow", c.delta > 0 ? "▲" : "▼"), h("span", "", c.label), h("b", "", fmtDelta(c)));
                 box.appendChild(chip);
@@ -570,7 +568,6 @@ function playButtonSoundwin() {
         $("ending").hidden = false;
     }
 
-    // ---------------------------------------------------------------- actions
     function applyResponse(data, periodLabel) {
         if (typeof data.solar === "number") state.solar = data.solar;
         if (typeof data.integrity === "number") state.integrity = data.integrity;

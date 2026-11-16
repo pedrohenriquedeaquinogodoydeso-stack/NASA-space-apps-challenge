@@ -1,5 +1,5 @@
 /*
-  Mars Mission - Planning page (planning.html)
+  Humanity’s Future Is Red - Planning page (planning.html)
   Mission configuration: landing site, rocket, modules, crew and duration.
   Depends on common.js, mission-sidebar.js and on the data injected by Flask (#mission-bootstrap).
 
@@ -17,14 +17,14 @@ function playButtonSound() {
     const sound = new Audio("/static/music/tool.mp3");
     sound.volume = 0.9;
     sound.play().catch(function (error) {
-        console.warn("Não foi possível tocar o som do botão.", error);
+        console.warn("Not possible to reproduce the sound.", error);
     });
 }
 function playButtonSound2() {
     const sound = new Audio("/static/music/camera.mp3");
     sound.volume = 0.9;
     sound.play().catch(function (error) {
-        console.warn("Não foi possível tocar o som do botão.", error);
+        console.warn("NNot possible to reproduce the sound.", error);
     });
 }
 let isPlayingButtonSound4 = false;
@@ -41,7 +41,7 @@ function playButtonSound4() {
     }, { once: true });
     sound.play().catch(function (error) {
         isPlayingButtonSound4 = false;
-        console.warn("Não foi possível tocar o som do botão.", error);
+        console.warn("Not possible to reproduce the sound.", error);
     });
 }
 

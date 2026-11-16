@@ -46,7 +46,6 @@ class MissionLoadout:
     def calculate_kg_loadout(self):
         site_data = MARS_SITES.get(self.landing_site, MARS_SITES["jezero"])
 
-        # Calculate the loadout based on crew size, mission duration, and constants.
         self.total_o2_kg = NASA_CONSTANTS["O2_KG_PER_PERSON_DAY"] * self.crew_size * self.mission_duration_days
         self.total_water_l = NASA_CONSTANTS["WATER_L_PER_PERSON_DAY"] * self.crew_size * self.mission_duration_days
         self.total_food_kg = NASA_CONSTANTS["FOOD_KG_PER_PERSON_DAY"] * self.crew_size * self.mission_duration_days

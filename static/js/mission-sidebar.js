@@ -94,7 +94,6 @@ function MissionSidebar(props) {
         return function () { window.removeEventListener("resize", onResize); };
     }, []);
 
-    // On wide screens the page makes room for the sidebar; on narrow screens it overlays the page.
     React.useEffect(function () {
         document.body.style.transition = prefersReducedMotion() ? "none" : "padding-right .25s ease";
         document.body.style.paddingRight = open && wide ? SIDEBAR_WIDTH + "px" : "0px";
@@ -140,7 +139,7 @@ function MissionSidebar(props) {
             transition: !animate ? "none" : (open ? "transform .25s ease" : "transform .25s ease, visibility 0s linear .25s")
         }
     },
-        // Tab attached to the sidebar edge: always reachable, even when the panel is collapsed
+
         h("button", {
             type: "button",
             onClick: toggle,

@@ -1,6 +1,5 @@
 <!-- Parts of this file were written with AI assistance (Gemini, Claude) -->
-<!-- Landing page: explains the NASA challenge, what the game is and how it solves the problem.
-     Self-contained (inline CSS + JS). Only external request: Google Fonts, with system fallbacks. -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;800;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* ---------- Design tokens (same palette family as the game screens) ---------- */
+
         :root {
             --soil: #2a1904;
             --soil-deep: #1e1103;
@@ -182,7 +181,6 @@
 </head>
 <body>
     <main>
-        <!-- ================= HERO ================= -->
         <header class="hero">
             <div class="wrap hero-grid">
                 <div>
@@ -193,8 +191,6 @@
                         <a class="plain" href="#challenge">Why we built this</a>
                     </div>
                 </div>
-
-                <!-- Hero image: astronaut on Mars, with the destination badge -->
                 <div class="hero-art">
                     <div class="ring" aria-hidden="true"></div>
                     <img src="{{ url_for('static', filename='imgs/astronaut_front.png') }}"
@@ -207,7 +203,6 @@
             </div>
         </header>
 
-        <!-- ================= TRY A DECISION ================= -->
         <section class="try" aria-labelledby="try-title">
             <div class="wrap try-grid">
                 <div>
@@ -239,7 +234,6 @@
             </div>
         </section>
 
-        <!-- ================= THE CHALLENGE ================= -->
         <section id="challenge" aria-labelledby="challenge-title">
             <div class="wrap">
                 <h2 id="challenge-title">The problem we are solving</h2>
@@ -259,7 +253,6 @@
             </div>
         </section>
 
-        <!-- ================= HOW WE SOLVE IT ================= -->
         <section aria-labelledby="solve-title">
             <div class="wrap">
                 <h2 id="solve-title">What we built: a Mars mission in three steps</h2>
@@ -280,7 +273,6 @@
             </div>
         </section>
 
-        <!-- ================= TRADE-OFFS ================= -->
         <section aria-labelledby="tradeoff-title">
             <div class="wrap">
                 <h2 id="tradeoff-title">No landing site is best at everything</h2>
@@ -309,7 +301,6 @@
             </div>
         </section>
 
-        <!-- ================= CHALLENGE DEMANDS -> GAME MECHANICS ================= -->
         <section aria-labelledby="map-title">
             <div class="wrap">
                 <h2 id="map-title">Every demand in the challenge is a lever in the game</h2>
@@ -327,8 +318,6 @@
                 </dl>
             </div>
         </section>
-
-        <!-- ================= REAL DATA ================= -->
         <section aria-labelledby="real-title">
             <div class="wrap">
                 <h2 id="real-title">Real numbers, real missions</h2>
@@ -349,7 +338,6 @@
             </div>
         </section>
 
-        <!-- ================= FINAL CALL TO ACTION ================= -->
         <section class="final" aria-labelledby="final-title">
             <div class="wrap">
                 <h2 id="final-title">Ready to run your outpost?</h2>
@@ -365,10 +353,6 @@
     </footer>
 
     <script>
-        // Interactive "Try one decision" widget. Mirrors the real mechanic in a simplified way:
-        //  1. The effects of the chosen option are always applied.
-        //  2. If the option has a risk, the game rolls once; stress raises the chance:
-        //     real chance = min(0.95, chance * (1 + 0.5 * stress / 100)).
         (function () {
             var START = { solar: 0.85, integrity: 100, stress: 30, science: 0 };
             var LIMITS = { solar: [0.4, 2.0], integrity: [0, 100], stress: [0, 100], science: [0, 30] };
@@ -407,7 +391,6 @@
                 return sign + (key === "solar" ? amount.toFixed(2) : String(Math.round(amount)));
             }
 
-            // Draw the four meters. `before` is optional and is used to show the change after a decision.
             function render(before) {
                 Object.keys(START).forEach(function (key) {
                     var span = LIMITS[key][1] - LIMITS[key][0];
@@ -484,10 +467,6 @@
     <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="false">Sound off</button>
 
     <script>
-        // Background music. Browsers block audio that starts on its own, so we:
-        //  1. try to play on load (works only if the browser allows it),
-        //  2. otherwise start on the first click, tap or key press,
-        //  3. always let the player turn the sound on or off with the button.
         (function () {
             var audio = new Audio("{{ url_for('static', filename='music/space.mp3') }}");
             audio.loop = true;
@@ -505,7 +484,6 @@
                 }
             }
 
-            // The button label always follows the real state of the audio.
             audio.addEventListener("play", function () {
                 toggle.textContent = "Sound on";
                 toggle.setAttribute("aria-pressed", "true");
@@ -528,7 +506,6 @@
                 }
             });
 
-            // First interaction anywhere on the page starts the music (unless the player already chose off).
             function startOnFirstInteraction(event) {
                 if (toggle.contains(event.target)) { return; }
                 if (!mutedByUser && audio.paused) { tryPlay(); }
